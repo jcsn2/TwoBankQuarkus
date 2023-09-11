@@ -1,4 +1,4 @@
-package org.gs.Transacao;
+package org.rs.Transacao;
 
 import java.net.URI;
 import java.net.URISyntaxException;

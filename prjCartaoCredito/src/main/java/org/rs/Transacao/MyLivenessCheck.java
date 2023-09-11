@@ -1,4 +1,4 @@
-package org.gs;
+package org.rs;
 
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;

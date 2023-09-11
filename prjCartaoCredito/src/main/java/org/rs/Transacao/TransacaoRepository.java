@@ -1,4 +1,4 @@
-package org.gs.Transacao;
+package org.rs.Transacao;
 
 import java.util.List;
 
@@ -14,9 +14,6 @@ public class TransacaoRepository<Transacao> implements PanacheMongoRepository<Tr
         return find("_id", id).firstResult();
     }
     
-    public Transacao findByName(String name) {
-        return find("name", name).firstResult();
-    }
 
     public List<Transacao> findOrderedName() {
         return listAll(Sort.by("name"));

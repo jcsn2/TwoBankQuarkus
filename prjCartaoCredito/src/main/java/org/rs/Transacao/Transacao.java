@@ -1,4 +1,4 @@
-package org.gs.Transacao;
+package org.rs.Transacao;
 
 import java.sql.Date;
 
@@ -10,11 +10,8 @@ public class Transacao extends PanacheMongoEntity {
     public String Estabelecimenro;
     public String TipoEstabelecimento;
     public Date Data;
-    public Long Valor;
+    public Double Valor;
 
-    public Transacao() {
-
-    }
 
     public Transacao(String clienteId, String estabelecimenro, String tipoEstabelecimento, Date data, Long valor) {
         this.ClienteId = clienteId;
