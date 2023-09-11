@@ -3,7 +3,6 @@ package acc.br;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.Entity;
 
-
 /**
  * Example JPA entity defined as a Panache Entity.
  * An ID field of Long type is provided, if you want to define your own ID field extends <code>PanacheEntityBase</code> instead.
