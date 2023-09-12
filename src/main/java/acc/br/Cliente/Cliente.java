@@ -1,6 +1,4 @@
-package acc.br;
-
-import java.sql.Date;
+package acc.br.Cliente;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.Entity;
@@ -25,9 +23,8 @@ import jakarta.persistence.Entity;
  * }
  */
 @Entity
-public class Extrato extends PanacheEntity {
-    public Date DataHoraMovimento;
-    public String Operacao;
-    public Double Valor;
-    public String NumConta;
+public class Cliente extends PanacheEntity {
+    public String ClienteNome;
+    public String ClienteCpf;
+    public String ClienteFone;
 }

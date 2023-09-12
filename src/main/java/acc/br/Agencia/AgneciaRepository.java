@@ -1,6 +1,6 @@
-package acc.br;
+package acc.br.Agencia;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.persistence.Entity;
 
 /**
@@ -23,8 +23,14 @@ import jakarta.persistence.Entity;
  * }
  */
 @Entity
-public class Cliente extends PanacheEntity {
-    public String ClienteNome;
-    public String ClienteCpf;
-    public String ClienteFone;
+public class AgneciaRepository implements PanacheRepository<Agencia> {
+
+    public Agencia findByName(String NomeAgencia) {
+        return find("NomeAgencia", NomeAgencia).firstResult();
+    }
+
+    public Agencia findByNum(String num) {
+        return find("NumAgencia", num).firstResult();
+    }
+    
 }

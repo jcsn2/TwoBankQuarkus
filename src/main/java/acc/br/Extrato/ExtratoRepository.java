@@ -1,6 +1,6 @@
-package acc.br;
+package acc.br.Extrato;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.persistence.Entity;
 
 /**
@@ -23,9 +23,12 @@ import jakarta.persistence.Entity;
  * }
  */
 @Entity
-public class Agencia extends PanacheEntity {
-    public String NumAgencia;
-    public String NomeAgencia;
-    public String Endereco;
-    public String Telefone;
+public class ExtratoRepository implements PanacheRepository<Extrato> {
+
+    public Extrato findByConta(String num) {
+        return find("NumConta", num).firstResult();
+    }
+
+//toDo: findBy numConta + periodo
+    
 }
