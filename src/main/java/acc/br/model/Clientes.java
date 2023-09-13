@@ -2,6 +2,9 @@ package acc.br.model;
 
 import javax.persistence.*;
 import javax.validation.constraints.*;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
@@ -205,8 +208,13 @@ public class Clientes extends PanacheEntityBase {
      *
      * @param dataNascimento A data de nascimento do cliente.
      */
-    public void setDataNascimento(Date dataNascimento) {
-        this.dataNascimento = dataNascimento;
+    public void setDataNascimento(String dataNascimentoString) {
+        try {
+            this.dataRegistro = new SimpleDateFormat("dd-MM-yyyy").parse(dataNascimentoString);
+        } catch (ParseException e) {
+            // TODO Criar nova exception
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -349,8 +357,13 @@ public class Clientes extends PanacheEntityBase {
      *
      * @param dataRegistro A data de registro do cliente.
      */
-    public void setDataRegistro(Date dataRegistro) {
-        this.dataRegistro = dataRegistro;
+    public void setDataRegistro(String dataRegistroString) {
+        try {
+            this.dataRegistro = new SimpleDateFormat("dd-MM-yyyy").parse(dataRegistroString);
+        } catch (ParseException e) {
+            // TODO Criar nova exception
+            e.printStackTrace();
+        }
     }
     
     /**
@@ -361,6 +374,6 @@ public class Clientes extends PanacheEntityBase {
     public boolean isAtivo() {
         return ativo;
     }
-    
+
 }
 

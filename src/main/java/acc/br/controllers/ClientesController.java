@@ -13,7 +13,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
- * Controlador REST para manipulação de clientes.
+ * Controlador REST para manipulaÃ§Ã£o de clientes.
  */
 @Path("/clientes")
 @RegisterForReflection
@@ -35,11 +35,11 @@ public class ClientesController {
     }
 
     /**
-     * Obtém um cliente pelo seu ID.
+     * ObtÃ©m um cliente pelo seu ID.
      *
      * @param clienteID O ID do cliente a ser obtido.
-     * @return Resposta HTTP com código 200 (OK) e o cliente encontrado se existir.
-     *         Resposta HTTP com código 404 (Not Found) se o cliente não for encontrado.
+     * @return Resposta HTTP com cÃ³digo 200 (OK) e o cliente encontrado se existir.
+     *         Resposta HTTP com cÃ³digo 404 (Not Found) se o cliente nÃ£o for encontrado.
      */
     @GET
     @Path("/{clienteID}")
@@ -56,9 +56,9 @@ public class ClientesController {
      * Cria um novo cliente no sistema.
      *
      * @param cliente O cliente a ser criado.
-     * @return Resposta HTTP com código 201 (Created) e o novo cliente se for bem-sucedida.
-     *         Resposta HTTP com código 409 (Conflict) se um cliente com o mesmo CPF já existir.
-     *         Resposta HTTP com código 400 (Bad Request) se os dados do cliente não forem válidos.
+     * @return Resposta HTTP com cÃ³digo 201 (Created) e o novo cliente se for bem-sucedida.
+     *         Resposta HTTP com cÃ³digo 409 (Conflict) se um cliente com o mesmo CPF jÃ¡ existir.
+     *         Resposta HTTP com cÃ³digo 400 (Bad Request) se os dados do cliente nÃ£o forem vÃ¡lidos.
      */
     @POST
     public Response criarCliente(@Valid Clientes cliente) {
@@ -77,10 +77,10 @@ public class ClientesController {
      *
      * @param clienteID O ID do cliente a ser atualizado.
      * @param cliente Os dados atualizados do cliente.
-     * @return Resposta HTTP com código 200 (OK) e o cliente atualizado se for bem-sucedida.
-     *         Resposta HTTP com código 404 (Not Found) se o cliente não for encontrado.
-     *         Resposta HTTP com código 409 (Conflict) se um cliente com o mesmo CPF já existir.
-     *         Resposta HTTP com código 400 (Bad Request) se os dados do cliente não forem válidos.
+     * @return Resposta HTTP com cÃ³digo 200 (OK) e o cliente atualizado se for bem-sucedida.
+     *         Resposta HTTP com cÃ³digo 404 (Not Found) se o cliente nÃ£o for encontrado.
+     *         Resposta HTTP com cÃ³digo 409 (Conflict) se um cliente com o mesmo CPF jÃ¡ existir.
+     *         Resposta HTTP com cÃ³digo 400 (Bad Request) se os dados do cliente nÃ£o forem vÃ¡lidos.
      */
     @PUT
     @Path("/{clienteID}")
@@ -101,8 +101,8 @@ public class ClientesController {
      * Remove um cliente pelo seu ID.
      *
      * @param clienteID O ID do cliente a ser removido.
-     * @return Resposta HTTP com código 204 (No Content) se o cliente for removido com sucesso.
-     *         Resposta HTTP com código 404 (Not Found) se o cliente não for encontrado.
+     * @return Resposta HTTP com cÃ³digo 204 (No Content) se o cliente for removido com sucesso.
+     *         Resposta HTTP com cÃ³digo 404 (Not Found) se o cliente nÃ£o for encontrado.
      */
     @DELETE
     @Path("/{clienteID}")
