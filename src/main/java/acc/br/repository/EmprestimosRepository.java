@@ -30,7 +30,7 @@ public class EmprestimosRepository implements PanacheRepository<Emprestimos> {
      * @param emprestimo O empréstimo a ser salvo.
      * @return O empréstimo salvo.
      */
-    public Emprestimos salvarEmprestimo(Emprestimos emprestimo) {
+    public Emprestimos salvarEmprestimo(Emprestimos emprestimo) {//ToDo: Possivelmente deprecada avaliar delecão.
         persist(emprestimo);
         return emprestimo;
     }
