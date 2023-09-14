@@ -1,11 +1,13 @@
 package acc.br.service;
 
 import acc.br.exception.InvestimentoNaoEncontradoException;
+import acc.br.model.Emprestimos;
 import acc.br.model.Investimentos;
 import acc.br.repository.InvestimentosRepository;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -21,6 +23,10 @@ public class InvestimentosService {
     @Inject
     InvestimentosRepository investimentosRepository;
 
+    @Inject
+    EntityManager entityManager;
+
+
     /**
      * Cria um novo registro de investimento.
      *
@@ -32,7 +38,8 @@ public class InvestimentosService {
         investimento.setDataInicio(LocalDate.now());
         investimento.setSaldoInvestimento(investimento.getSaldoInicial());
 
-        investimentosRepository.persist(investimento);
+        Investimentos investimentoGerenciado = entityManager.merge(investimento); // Mescla a entidade no contexto de persistência
+        entityManager.persist(investimentoGerenciado); // Persiste a entidad
     }
 
     /**
@@ -56,7 +63,8 @@ public class InvestimentosService {
         entity.setSaldoInicial(investimento.getSaldoInicial());
         entity.setDataInicio(investimento.getDataInicio());
 
-        investimentosRepository.persist(entity);
+         Investimentos investimentoGerenciado = entityManager.merge(entity); // Mescla a entidade no contexto de persistência
+        entityManager.persist(investimentoGerenciado); // Persiste a entidade;
     }
 
     /**
