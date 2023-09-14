@@ -3,11 +3,7 @@ package acc.br.model;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import java.time.LocalDate;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
 /**
@@ -55,7 +51,7 @@ public class Clientes extends PanacheEntityBase {
      */
     @Past(message = "{quarkus.hibernate-validator.message.past.cliente.dataNascimento}")
     @Column(name = "DataNascimento")
-    private Date dataNascimento;
+    private LocalDate dataNascimento;
 
     /**
      * CPF do cliente.
@@ -112,7 +108,7 @@ public class Clientes extends PanacheEntityBase {
      */
     @PastOrPresent(message = "{quarkus.hibernate-validator.message.past-or-present.cliente.dataRegistro}")
     @Column(name = "DataRegistro")
-    private Date dataRegistro;
+    private LocalDate dataRegistro;
     
     /**
      * Indica se o cliente está ativo.
@@ -199,7 +195,7 @@ public class Clientes extends PanacheEntityBase {
      *
      * @return A data de nascimento do cliente.
      */
-    public Date getDataNascimento() {
+    public LocalDate getDataNascimento() {
         return dataNascimento;
     }
 
@@ -208,13 +204,8 @@ public class Clientes extends PanacheEntityBase {
      *
      * @param dataNascimento A data de nascimento do cliente.
      */
-    public void setDataNascimento(String dataNascimentoString) {
-        try {
-            this.dataRegistro = new SimpleDateFormat("dd-MM-yyyy").parse(dataNascimentoString);
-        } catch (ParseException e) {
-            // TODO Criar nova exception
-            e.printStackTrace();
-        }
+    public void setDataNascimento(LocalDate dataNascimento) {
+    	this.dataNascimento = dataNascimento;
     }
 
     /**
@@ -348,7 +339,7 @@ public class Clientes extends PanacheEntityBase {
      *
      * @return A data de registro do cliente.
      */
-    public Date getDataRegistro() {
+    public LocalDate getDataRegistro() {
         return dataRegistro;
     }
 
@@ -357,13 +348,8 @@ public class Clientes extends PanacheEntityBase {
      *
      * @param dataRegistro A data de registro do cliente.
      */
-    public void setDataRegistro(String dataRegistroString) {
-        try {
-            this.dataRegistro = new SimpleDateFormat("dd-MM-yyyy").parse(dataRegistroString);
-        } catch (ParseException e) {
-            // TODO Criar nova exception
-            e.printStackTrace();
-        }
+    public void setDataRegistro(LocalDate dataRegistro) {
+    	this.dataRegistro = dataRegistro;
     }
     
     /**

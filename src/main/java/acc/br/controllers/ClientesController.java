@@ -6,6 +6,7 @@ import acc.br.model.Clientes;
 import acc.br.service.ClientesService;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -42,6 +43,7 @@ public class ClientesController {
      *         Resposta HTTP com cÃ³digo 404 (Not Found) se o cliente nÃ£o for encontrado.
      */
     @GET
+    @Transactional
     @Path("/{clienteID}")
     public Response obterCliente(@PathParam("clienteID") Long clienteID) {
         try {
@@ -60,6 +62,7 @@ public class ClientesController {
      *         Resposta HTTP com cÃ³digo 409 (Conflict) se um cliente com o mesmo CPF jÃ¡ existir.
      *         Resposta HTTP com cÃ³digo 400 (Bad Request) se os dados do cliente nÃ£o forem vÃ¡lidos.
      */
+    @Transactional
     @POST
     public Response criarCliente(@Valid Clientes cliente) {
         try {

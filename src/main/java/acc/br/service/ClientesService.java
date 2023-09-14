@@ -7,9 +7,8 @@ import acc.br.exception.ClienteExistenteException;
 import acc.br.exception.ClienteNaoEncontradoException;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
-
-import org.hibernate.validator.constraints.br.CPF;
 
 import java.util.InputMismatchException;
 import java.util.List;
@@ -22,6 +21,9 @@ public class ClientesService {
 
     @Inject
     ClientesRepository clientesRepository;
+    
+    @Inject
+    EntityManager entityManager;
 
     /**
      * Lista todos os clientes registrados.
@@ -39,6 +41,7 @@ public class ClientesService {
      * @return O cliente correspondente, se encontrado.
      * @throws ClienteNaoEncontradoException Se o cliente não for encontrado.
      */
+    @Transactional
     public Clientes obterCliente(Long clienteID) {
         Clientes cliente = clientesRepository.findById(clienteID);
         if (cliente == null) {
@@ -60,8 +63,8 @@ public class ClientesService {
             throw new ClienteExistenteException("Cliente já existe com ID: " + cliente.getClienteID());
         }
         validarCliente(cliente); 
-        cliente.persist();
-        
+        Clientes clienteGerenciado = entityManager.merge(cliente); // Mescla a entidade no contexto de persistência
+        entityManager.persist(clienteGerenciado); // Persiste a entidade
         return cliente;
     }
 
@@ -81,7 +84,9 @@ public class ClientesService {
         }
         validarCliente(cliente);
         cliente.setClienteID(clienteID);
-        cliente.persist();
+        
+        Clientes clienteGerenciado = entityManager.merge(cliente); // Mescla a entidade no contexto de persistência
+        entityManager.persist(clienteGerenciado); // Persiste a entidade
         return cliente;
     }
 

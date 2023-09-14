@@ -5,6 +5,8 @@ import acc.br.repository.ContasRepository;
 import acc.br.exception.ContaExistenteException;
 import acc.br.exception.ContaNaoEncontradaException;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.List;
@@ -15,7 +17,11 @@ import java.util.List;
 @ApplicationScoped
 public class ContasService {
 
-    private final ContasRepository contasRepository;
+	@Inject
+    ContasRepository contasRepository;
+    
+    @Inject
+    EntityManager entityManager;
 
     public ContasService(ContasRepository contasRepository) {
         this.contasRepository = contasRepository;
@@ -58,7 +64,10 @@ public class ContasService {
             throw new ContaExistenteException("Conta já existe com ID: " + conta.getContaID());
         }
         conta.setStatusConta("Ativa");
-        contasRepository.persist(conta);
+        
+        Contas contasGerenciada = entityManager.merge(conta); // Mescla a entidade no contexto de persistência
+        entityManager.persist(contasGerenciada); // Persiste a entidade
+        
         return conta;
     }
 
@@ -77,7 +86,10 @@ public class ContasService {
             throw new ContaNaoEncontradaException("Conta não encontrada com ID: " + contaID);
         }
         conta.setContaID(contaID);
-        contasRepository.getEntityManager().merge(conta);
+        
+        Contas contasGerenciada = entityManager.merge(conta); // Mescla a entidade no contexto de persistência
+        entityManager.persist(contasGerenciada); // Persiste a entidade
+        
         return conta;
     }
 
