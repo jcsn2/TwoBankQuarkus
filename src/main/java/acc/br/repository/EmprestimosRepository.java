@@ -20,7 +20,7 @@ public class EmprestimosRepository implements PanacheRepository<Emprestimos> {
      * @param status O status do empréstimo.
      * @return Uma lista de empréstimos que correspondem aos critérios.
      */
-    public List<Emprestimos> findByClienteIDAndStatus(int clienteID, String status) {
+    public List<Emprestimos> findByClienteIDAndStatus(Long clienteID, String status) {
         return list("clienteID = ?1 and status = ?2", clienteID, status);
     }
     

@@ -1,9 +1,11 @@
 package acc.br.service;
 
+import acc.br.exception.ClienteNaoEncontradoException;
 import acc.br.exception.EmprestimoExistenteException;
 import acc.br.exception.EmprestimoNaoEncontradoException;
 import acc.br.model.Clientes;
 import acc.br.model.Emprestimos;
+import acc.br.repository.ClientesRepository;
 import acc.br.repository.EmprestimosRepository;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -25,6 +27,9 @@ public class EmprestimosService {
 
     @Inject
     EntityManager entityManager;
+    
+    @Inject
+    ClientesRepository clientesRepository;
 
 
     /**
@@ -36,6 +41,11 @@ public class EmprestimosService {
     @Transactional
     public Emprestimos criarEmprestimo(Emprestimos emprestimo) {
         validarEmprestimo(emprestimo);
+        
+        Clientes clienteExistente = clientesRepository.findById(emprestimo.getClienteID());
+        if (clienteExistente == null) {
+            throw new ClienteNaoEncontradoException("Cliente n„o encontrado com ID: " + emprestimo.getClienteID());
+        }
 
         List<Emprestimos> emprestimosExistente = emprestimosRepository.findByClienteIDAndStatus(emprestimo.getClienteID(), emprestimo.getStatus());
         if (!emprestimosExistente.isEmpty()) {
@@ -63,6 +73,11 @@ public class EmprestimosService {
         Emprestimos emprestimoExistente = emprestimosRepository.findById(id);
         if (emprestimoExistente == null) {
             throw new EmprestimoNaoEncontradoException("Empr√©stimo n√£o encontrado");
+        }
+        
+        Clientes clienteExistente = clientesRepository.findById(emprestimo.getClienteID());
+        if (clienteExistente == null) {
+            throw new ClienteNaoEncontradoException("Cliente n„o encontrado com ID: " + emprestimo.getClienteID());
         }
 
         // Calcular o novo valor das parcelas com base na taxa de juros mensal

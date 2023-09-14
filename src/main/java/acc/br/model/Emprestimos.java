@@ -55,7 +55,7 @@ public class Emprestimos extends PanacheEntityBase {
      * ID do cliente associado ao empréstimo.
      */
     @Column(name = "ClienteID")
-    private int clienteID;
+    private Long clienteID;
 
     /**
      * Prazo em meses do empréstimo.
@@ -168,7 +168,7 @@ public class Emprestimos extends PanacheEntityBase {
      *
      * @return O ID do cliente associado ao empréstimo.
      */
-    public int getClienteID() {
+    public Long getClienteID() {
         return clienteID;
     }
 
@@ -177,7 +177,7 @@ public class Emprestimos extends PanacheEntityBase {
      *
      * @param clienteID O ID do cliente associado ao empréstimo.
      */
-    public void setClienteID(int clienteID) {
+    public void setClienteID(Long clienteID) {
         this.clienteID = clienteID;
     }
 
