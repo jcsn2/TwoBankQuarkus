@@ -81,9 +81,9 @@ public class ParametrosConfiguracaoController {
      * @return Uma resposta HTTP com o código 200 (OK) e uma lista de todos os registros de parâmetros de configuração.
      */
     @GET
-    public List<ParametrosConfiguracao> listarParametrosConfiguracao() {
+    public Response listarParametrosConfiguracao() {
         List<ParametrosConfiguracao> parametrosConfiguracaoList = parametrosConfiguracaoService.listarParametrosConfiguracao();
-        return (List<ParametrosConfiguracao>) Response.ok(parametrosConfiguracaoList).build();
+        return Response.ok(parametrosConfiguracaoList).build();
     }
 
     /**

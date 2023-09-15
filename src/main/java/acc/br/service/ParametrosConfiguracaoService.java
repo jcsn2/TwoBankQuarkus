@@ -1,11 +1,14 @@
 package acc.br.service;
 
+import acc.br.OpaGen;
 import acc.br.exception.ParametroConfiguracaoNaoEncontradoException;
 import acc.br.model.ParametrosConfiguracao;
+import acc.br.model.Transacoes;
 import acc.br.repository.ParametrosConfiguracaoRepository;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.util.List;
 
@@ -18,6 +21,9 @@ public class ParametrosConfiguracaoService {
     @Inject
     ParametrosConfiguracaoRepository parametrosConfiguracaoRepository;
 
+    @Inject
+    EntityManager entityManager;
+
     /**
      * Cria um novo registro de parâmetro de configuração.
      *
@@ -25,7 +31,8 @@ public class ParametrosConfiguracaoService {
      */
     @Transactional
     public void criarParametrosConfiguracao(ParametrosConfiguracao parametrosConfiguracao) {
-        parametrosConfiguracaoRepository.persist(parametrosConfiguracao);
+         ParametrosConfiguracao parametrosConfiguracaoGerenciado = entityManager.merge(parametrosConfiguracao); // Mescla a entidade no contexto de persistência
+        entityManager.persist(parametrosConfiguracaoGerenciado); // Persiste a entidade
     }
 
     /**
@@ -48,7 +55,8 @@ public class ParametrosConfiguracaoService {
         entity.setValorParametro(parametrosConfiguracao.getValorParametro());
         entity.setDescricaoParametro(parametrosConfiguracao.getDescricaoParametro());
 
-        parametrosConfiguracaoRepository.persist(entity);
+         ParametrosConfiguracao parametrosConfiguracaoGerenciado = entityManager.merge(entity); // Mescla a entidade no contexto de persistência
+        entityManager.persist(parametrosConfiguracaoGerenciado); // Persiste a entidade
     }
 
     /**
@@ -72,7 +80,8 @@ public class ParametrosConfiguracaoService {
      * @return Uma lista de todos os registros de parâmetros de configuração.
      */
     public List<ParametrosConfiguracao> listarParametrosConfiguracao() {
-        return parametrosConfiguracaoRepository.listAll();
+        List<ParametrosConfiguracao> allParameters = parametrosConfiguracaoRepository.listAll();
+        return allParameters;
     }
 
     /**
