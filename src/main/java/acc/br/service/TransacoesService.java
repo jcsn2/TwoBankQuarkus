@@ -302,14 +302,15 @@ public class TransacoesService {
         if (valor.compareTo(contaOrigem.getSaldo()) > 0) {
             throw new IllegalArgumentException("Saldo insuficiente para realizar a transferência.");
         }
-
+        
         BigDecimal novoSaldoOrigem = contaOrigem.getSaldo().subtract(valor);
         BigDecimal novoSaldoDestino = contaDestino.getSaldo().add(valor);
-
+        
         contaOrigem.setSaldo(novoSaldoOrigem);
         contaDestino.setSaldo(novoSaldoDestino);
         
-        contasRepository.persist(contaOrigem, contaDestino);
+        contasRepository.persist(contaOrigem);
+        contasRepository.persist(contaDestino);
         
         Transacoes transacao = new Transacoes();
         transacao.setTipoTransacao(TipoTransacao.TRANSFERENCIA);
@@ -326,7 +327,8 @@ public class TransacoesService {
         notificacoes.setEnviada(1);
         notificacoes.setMensagemNotificacao("O Cliente: " + notificacoes.getClienteID() + " realizou um Tipo de Transação: " + transacao.getTipoTransacao() + " na data e hora: " + notificacoes.getDataHoraNotificacao() + " no valor de: R$ " + transacao.getValor() + " para a conta destino: " + transacao.getContaDestinoID());
         
-        notificacoesService.criarNotificacao(notificacoes);
+        //Eliminado pois estava impedindo a transação de persistir.
+        //notificacoesService.criarNotificacao(notificacoes);
     }
 
     /**
