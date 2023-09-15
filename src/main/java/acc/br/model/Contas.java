@@ -10,17 +10,8 @@ import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 /**
  * Classe que representa uma conta no sistema.
  */
-@Entity
-@Table(name = "Contas")
-public class Contas extends PanacheEntityBase {
-
-    /**
-     * ID único da conta.
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ContaID")
-    private Long contaID;
+@MappedSuperclass 
+public abstract class Contas extends PanacheEntityBase  {
 
     /**
      * Tipo da conta.
@@ -58,20 +49,6 @@ public class Contas extends PanacheEntityBase {
      */
     @Column(name = "ClienteID")
     private Long clienteID;
-
-    /**
-     * Limite de crédito da conta.
-     */
-    @DecimalMax(value = "9999999.99", message = "{quarkus.hibernate-validator.message.decimalMax.contas.limiteCredito}")
-    @Column(name = "LimiteCredito")
-    private BigDecimal limiteCredito;
-
-    /**
-     * Informação adicional sobre a conta.
-     */
-    @Size(max = 45, message = "{quarkus.hibernate-validator.message.size.contas.contascol}")
-    @Column(name = "Contascol")
-    private String contascol;
     
     /**
      * Indica se a conta está ativa.
@@ -80,24 +57,6 @@ public class Contas extends PanacheEntityBase {
     private boolean ativa;
 
     // Getters e setters
-
-    /**
-     * Obtém o ID da conta.
-     *
-     * @return O ID da conta.
-     */
-    public Long getContaID() {
-        return contaID;
-    }
-
-    /**
-     * Define o ID da conta.
-     *
-     * @param contaID O ID da conta.
-     */
-    public void setContaID(Long contaID) {
-        this.contaID = contaID;
-    }
 
     /**
      * Obtém o tipo da conta.
@@ -187,42 +146,6 @@ public class Contas extends PanacheEntityBase {
      */
     public void setClienteID(Long clienteID) {
         this.clienteID = clienteID;
-    }
-
-    /**
-     * Obtém o limite de crédito da conta.
-     *
-     * @return O limite de crédito da conta.
-     */
-    public BigDecimal getLimiteCredito() {
-        return limiteCredito;
-    }
-
-    /**
-     * Define o limite de crédito da conta.
-     *
-     * @param limiteCredito O limite de crédito da conta.
-     */
-    public void setLimiteCredito(BigDecimal limiteCredito) {
-        this.limiteCredito = limiteCredito;
-    }
-
-    /**
-     * Obtém a informação adicional sobre a conta.
-     *
-     * @return A informação adicional sobre a conta.
-     */
-    public String getContascol() {
-        return contascol;
-    }
-
-    /**
-     * Define a informação adicional sobre a conta.
-     *
-     * @param contascol A informação adicional sobre a conta.
-     */
-    public void setContascol(String contascol) {
-        this.contascol = contascol;
     }
     
     /**

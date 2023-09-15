@@ -1,16 +1,25 @@
 package acc.br.controllers;
 
-import acc.br.exception.ContaExistenteException;
 import acc.br.exception.ContaNaoEncontradaException;
+import acc.br.model.ContaCorrente;
+import acc.br.model.Poupanca;
+import acc.br.repository.ContaCorrenteRepository;
+import acc.br.repository.ContasConjuntasRepository;
+import acc.br.repository.PoupancaRepository;
 import acc.br.model.Contas;
-import acc.br.service.ContasService;
+import acc.br.model.ContasConjuntas;
+import acc.br.service.ContaCorrenteService;
+import acc.br.service.PoupancaService;
+import acc.br.util.PoupancaServiceQualifier;
+import acc.br.service.ContasConjuntasService;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import javax.inject.Inject;
-import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import java.util.List;
+
 
 /**
  * Controlador REST para manipulação de contas bancárias.
@@ -22,97 +31,108 @@ import java.util.List;
 public class ContasController {
 
     @Inject
-    ContasService contasService;
+    ContaCorrenteService contaCorrenteService;
+
+    @Inject
+    @PoupancaServiceQualifier
+    PoupancaService poupancaService;
+
+    @Inject
+    ContasConjuntasService contasConjuntasService;
+    
+    @Inject
+    ContasConjuntasRepository contasConjuntasRepository;
+    
+    @Inject
+    ContaCorrenteRepository contaCorrenteRepository;
+    
+    @Inject
+    PoupancaRepository poupancaRepository;
 
     /**
-     * Lista todas as contas cadastradas no sistema.
+     * Lista todas as contas correntes cadastradas no sistema.
      *
-     * @return Uma lista de contas bancárias.
+     * @return Uma lista de contas correntes.
      */
     @GET
-    public List<Contas> listarContas() {
-        return contasService.listarContas();
+    @Path("/correntes")
+    public List<ContaCorrente> listarContasCorrentes() {
+        return contaCorrenteService.listarContasCorrentes();
     }
 
     /**
-     * Obtém uma conta bancária pelo seu ID.
+     * Lista todas as contas poupança cadastradas no sistema.
      *
-     * @param contaID O ID da conta bancária a ser obtida.
-     * @return Resposta HTTP com código 200 (OK) e a conta bancária encontrada se existir.
-     *         Resposta HTTP com código 404 (Not Found) se a conta bancária não for encontrada.
+     * @return Uma lista de contas poupança.
      */
     @GET
-    @Path("/{contaID}")
-    public Response obterConta(@PathParam("contaID") Long contaID) {
+    @Path("/poupanca")
+    public List<Poupanca> listarContasPoupanca() {
+        return poupancaService.listarPoupancas();
+    }
+
+    /**
+     * Lista todas as contas conjuntas cadastradas no sistema.
+     *
+     * @return Uma lista de contas conjuntas.
+     */
+    @GET
+    @Path("/conjuntas")
+    public List<ContasConjuntas> listarContasConjuntas() {
+        return contasConjuntasService.listarContasConjuntas();
+    }
+
+    /**
+     * Obtém uma conta corrente pelo seu ID.
+     *
+     * @param contaID O ID da conta corrente a ser obtida.
+     * @return Resposta HTTP com código 200 (OK) e a conta corrente encontrada se existir.
+     *         Resposta HTTP com código 404 (Not Found) se a conta corrente não for encontrada.
+     */
+    @GET
+    @Path("/correntes/{contaID}")
+    public Response obterContaCorrente(@PathParam("contaID") Long contaID) {
         try {
-            Contas conta = contasService.obterConta(contaID);
-            return Response.status(Response.Status.OK).entity(conta).build();
+            Contas contaCorrente = contaCorrenteRepository.findById(contaID);
+            return Response.status(Response.Status.OK).entity(contaCorrente).build();
         } catch (ContaNaoEncontradaException e) {
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         }
     }
 
     /**
-     * Cria uma nova conta bancária no sistema.
+     * Obtém uma conta poupança pelo seu ID.
      *
-     * @param conta A conta bancária a ser criada.
-     * @return Resposta HTTP com código 201 (Created) e a nova conta bancária se for bem-sucedida.
-     *         Resposta HTTP com código 409 (Conflict) se uma conta bancária com o mesmo número já existir.
-     *         Resposta HTTP com código 400 (Bad Request) se os dados da conta bancária não forem válidos.
+     * @param contaID O ID da conta poupança a ser obtida.
+     * @return Resposta HTTP com código 200 (OK) e a conta poupança encontrada se existir.
+     *         Resposta HTTP com código 404 (Not Found) se a conta poupança não for encontrada.
      */
-    @POST
-    public Response criarConta(@Valid Contas conta) {
+    @GET
+    @Path("/poupanca/{contaID}")
+    public Response obterContaPoupanca(@PathParam("contaID") Long contaID) {
         try {
-            Contas novaConta = contasService.criarConta(conta);
-            return Response.status(Response.Status.CREATED).entity(novaConta).build();
-        } catch (ContaExistenteException e) {
-            return Response.status(Response.Status.CONFLICT).entity(e.getMessage()).build();
-        } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
-        }
-    }
-
-    /**
-     * Atualiza uma conta bancária existente no sistema.
-     *
-     * @param contaID O ID da conta bancária a ser atualizada.
-     * @param conta Os dados atualizados da conta bancária.
-     * @return Resposta HTTP com código 200 (OK) e a conta bancária atualizada se for bem-sucedida.
-     *         Resposta HTTP com código 404 (Not Found) se a conta bancária não for encontrada.
-     *         Resposta HTTP com código 409 (Conflict) se uma conta bancária com o mesmo número já existir.
-     *         Resposta HTTP com código 400 (Bad Request) se os dados da conta bancária não forem válidos.
-     */
-    @PUT
-    @Path("/{contaID}")
-    public Response atualizarConta(@PathParam("contaID") Long contaID, @Valid Contas conta) {
-        try {
-            Contas contaAtualizada = contasService.atualizarConta(contaID, conta);
-            return Response.status(Response.Status.OK).entity(contaAtualizada).build();
-        } catch (ContaNaoEncontradaException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
-        } catch (ContaExistenteException e) {
-            return Response.status(Response.Status.CONFLICT).entity(e.getMessage()).build();
-        } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
-        }
-    }
-
-    /**
-     * Remove uma conta bancária pelo seu ID.
-     *
-     * @param contaID O ID da conta bancária a ser removida.
-     * @return Resposta HTTP com código 204 (No Content) se a conta bancária for removida com sucesso.
-     *         Resposta HTTP com código 404 (Not Found) se a conta bancária não for encontrada.
-     */
-    @DELETE
-    @Path("/{contaID}")
-    public Response removerConta(@PathParam("contaID") Long contaID) {
-        try {
-            contasService.removerConta(contaID);
-            return Response.status(Response.Status.NO_CONTENT).build();
+        	Poupanca contaPoupanca = poupancaRepository.findById(contaID);
+            return Response.status(Response.Status.OK).entity(contaPoupanca).build();
         } catch (ContaNaoEncontradaException e) {
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         }
     }
 
+    /**
+     * Obtém uma conta conjunta pelo seu ID.
+     *
+     * @param contaID O ID da conta conjunta a ser obtida.
+     * @return Resposta HTTP com código 200 (OK) e a conta conjunta encontrada se existir.
+     *         Resposta HTTP com código 404 (Not Found) se a conta conjunta não for encontrada.
+     */
+    @GET
+    @Path("/conjuntas/{contaID}")
+    public Response obterContaConjunta(@PathParam("contaID") Long contaID) {
+        try {
+            ContasConjuntas contaConjunta = contasConjuntasRepository.findById(contaID);
+            return Response.status(Response.Status.OK).entity(contaConjunta).build();
+        } catch (ContaNaoEncontradaException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+        }
+    }
 }

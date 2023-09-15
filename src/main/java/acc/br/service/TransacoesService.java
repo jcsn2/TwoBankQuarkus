@@ -1,12 +1,11 @@
 package acc.br.service;
 
-import acc.br.OpaGen;
 import acc.br.exception.AlertaNaoEncontradoException;
 import acc.br.exception.ContaNaoEncontradaException;
 import acc.br.exception.NotificacaoNaoEncontradaException;
 import acc.br.exception.TransacoesNaoEncontradaException;
 import acc.br.model.AlertasGastosExcessivos;
-import acc.br.model.Clientes;
+import acc.br.model.ContaCorrente;
 import acc.br.model.Contas;
 import acc.br.model.Notificacoes;
 import acc.br.model.Transacoes;
@@ -18,7 +17,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
@@ -162,53 +160,71 @@ public class TransacoesService {
      * @throws NotificacaoNaoEncontradaException Se houver um problema com o serviço de notificações.
      */
     @Transactional
-    //testando fun;ão de saque sem o servico de excessão das notificacões.
-    public void realizarSaque(Long contaID, @NotNull BigDecimal valor)  {//throws NotificacaoNaoEncontradaException {
-
+    public void realizarSaque(Long contaID, @NotNull BigDecimal valor) throws NotificacaoNaoEncontradaException {
+    	
         if (valor.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("O valor do saque deve ser maior que zero.");
         }
-        
+
         Contas conta = contasRepository.findById(contaID);
+ 
         if (conta == null) {
             throw new ContaNaoEncontradaException("Conta não encontrada com ID: " + contaID);
         }
-        BigDecimal saldo = conta.getSaldo();
-        BigDecimal Limite = conta.getLimiteCredito();
-        BigDecimal saldoMaisLimite = saldo.add(Limite);
-        
-        if (valor.compareTo(saldoMaisLimite) > 0) {
-            throw new IllegalArgumentException("Saldo insuficiente para realizar o saque.");
+
+        BigDecimal saldoConta = conta.getSaldo();
+
+        // Verifica se a conta é do tipo ContaCorrente
+        if (conta instanceof ContaCorrente) {
+            ContaCorrente contaCorrente = (ContaCorrente) conta;
+            BigDecimal limiteCredito = contaCorrente.getLimiteCredito();
+
+            if (saldoConta.compareTo(valor) < 0 && saldoConta.add(limiteCredito).compareTo(valor) < 0) {
+                throw new IllegalArgumentException("Saldo insuficiente para realizar o saque.");
+            }
+
+            // Verifica se o saque excede o saldo e usa o limite de crédito
+            if (saldoConta.compareTo(valor) < 0) {
+                BigDecimal valorRestante = valor.subtract(saldoConta);
+                saldoConta = BigDecimal.ZERO; // Esvazia o saldo
+                contaCorrente.setLimiteCredito(limiteCredito.subtract(valorRestante));
+            } else {
+                saldoConta = saldoConta.subtract(valor);
+            }
+
+            // Atualiza o saldo da conta
+            contaCorrente.setSaldo(saldoConta);
+            contasRepository.persist(contaCorrente);
+        } else {
+            if (saldoConta.compareTo(valor) < 0) {
+                throw new IllegalArgumentException("Saldo insuficiente para realizar o saque.");
+            }
+
+            saldoConta = saldoConta.subtract(valor);
+            conta.setSaldo(saldoConta);
+            contasRepository.persist(conta);
         }
         
         BigDecimal limiteSaque = alertasGastosExcessivos.getValorLimite();
-        //Forcando um Limite de saque para testes
-        limiteSaque = BigDecimal.valueOf(500.00);
 
         if (valor.compareTo(limiteSaque) > 0) {
             // O saque excede o limite, crie uma notificação de gasto excessivo
         	criarNotificacaoGastoExcessivo(conta, valor);
         }
-        
-        // Prossiga com o saque normal
-        BigDecimal novoSaldo = conta.getSaldo().subtract(valor);
-        conta.setSaldo(novoSaldo);
-        contasRepository.persist(conta);
-        
+
         Transacoes transacao = new Transacoes();
         transacao.setTipoTransacao(TipoTransacao.SAQUE);
         transacao.setDataHoraTransacao(LocalDate.now());
         transacao.setValor(valor);
         transacao.setContaID(contaID); 
-
-        Transacoes transacaoGerenciado = entityManager.merge(transacao); // Mescla a entidade no contexto de persistência
-        entityManager.persist(transacaoGerenciado); // Persiste a entidade
+        transacoesRepository.persist(transacao);
         
         notificacoes.setClienteID(conta.getClienteID());
         notificacoes.setDataHoraNotificacao(LocalDateTime.now());
         notificacoes.setEnviada(1);
         notificacoes.setMensagemNotificacao("O Cliente: " + notificacoes.getClienteID() + " realizou um Tipo de Transação: " + transacao.getTipoTransacao() + " na data e hora: " + notificacoes.getDataHoraNotificacao() + " no valor de: R$ " + transacao.getValor());
-       
+        
+        notificacoesService.criarNotificacao(notificacoes);
     }
 
     /**
@@ -329,38 +345,5 @@ public class TransacoesService {
         
         //Eliminado pois estava impedindo a transação de persistir.
         //notificacoesService.criarNotificacao(notificacoes);
-    }
-
-    /**
-     * Valida os dados de uma conta.
-     *
-     * @param conta A conta a ser validada.
-     * @throws IllegalArgumentException Se algum dos campos da conta for inválido.
-     */
-    public void validarConta(@Valid Contas conta) {
-        // Verifica se o tipo de conta é válido (por exemplo, "Corrente" ou "Poupança").
-        if (!"Corrente".equals(conta.getTipoConta()) && !"Poupança".equals(conta.getTipoConta())) {
-            throw new IllegalArgumentException("Tipo de conta inválido: " + conta.getTipoConta());
-        }
-
-        // Verifica se o saldo não é negativo.
-        if (conta.getSaldo().compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("O saldo da conta não pode ser negativo.");
-        }
-
-        // Verifica se o limite de crédito (caso exista) não é negativo.
-        if (conta.getLimiteCredito() != null && conta.getLimiteCredito().compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("O limite de crédito da conta não pode ser negativo.");
-        }
-
-        // Verifica se a data de abertura da conta não é futura.
-        if (conta.getDataAbertura() != null && conta.getDataAbertura().isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("A data de abertura da conta não pode ser futura.");
-        }
-
-        // Verifica se o status da conta é válido (por exemplo, "Ativa" ou "Inativa").
-        if (!"Ativa".equals(conta.getStatusConta()) && !"Inativa".equals(conta.getStatusConta())) {
-            throw new IllegalArgumentException("Status de conta inválido: " + conta.getStatusConta());
-        }
     }
 }

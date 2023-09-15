@@ -6,7 +6,7 @@ import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import javax.enterprise.context.ApplicationScoped;
 
 /**
- * Repositório para a entidade Contas Conjunta.
+ * Repositório para a entidade ContasConjuntas.
  */
 @ApplicationScoped
 public class ContasConjuntasRepository implements PanacheRepository<ContasConjuntas> {

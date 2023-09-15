@@ -1,12 +1,19 @@
 package acc.br.service;
 
+import acc.br.model.Contas;
 import acc.br.model.ContasConjuntas;
 import acc.br.repository.ContasConjuntasRepository;
+import acc.br.util.TipoConta;
 import acc.br.exception.ContaConjuntaExistenteException;
 import acc.br.exception.ContaConjuntaNaoEncontradaException;
+import acc.br.exception.ContaExistenteException;
+import acc.br.exception.ContaNaoEncontradaException;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,6 +27,18 @@ public class ContasConjuntasService {
 
     @Inject
     ContasConjuntasRepository contasConjuntasRepository;
+    
+    @Inject
+    EntityManager entityManager;
+    
+    public ContasConjuntasService() {
+        // Construtor sem argumentos
+    }
+
+    public ContasConjuntasService(ContasConjuntasRepository contasConjuntasRepository) {
+        super();
+        this.contasConjuntasRepository = contasConjuntasRepository;
+    }
 
     /**
      * Lista todas as contas conjuntas bancárias.
@@ -31,21 +50,6 @@ public class ContasConjuntasService {
     }
 
     /**
-     * Obtém uma conta conjunta bancária pelo seu ID.
-     *
-     * @param contaConjuntaID O ID da conta conjunta a ser obtida.
-     * @return A conta conjunta bancária correspondente.
-     * @throws ContaConjuntaNaoEncontradaException se a conta conjunta não for encontrada.
-     */
-    public ContasConjuntas obterContaConjunta(Long contaConjuntaID) {
-        ContasConjuntas contaConjunta = contasConjuntasRepository.findById(contaConjuntaID);
-        if (contaConjunta == null) {
-            throw new ContaConjuntaNaoEncontradaException("Conta conjunta não encontrada com ID: " + contaConjuntaID);
-        }
-        return contaConjunta;
-    }
-
-    /**
      * Cria uma nova conta conjunta bancária.
      *
      * @param contaConjunta A conta conjunta bancária a ser criada.
@@ -53,12 +57,17 @@ public class ContasConjuntasService {
      * @throws ContaConjuntaExistenteException se a conta conjunta já existir.
      */
     @Transactional
-    public ContasConjuntas criarContaConjunta(ContasConjuntas contaConjunta) {
+    public ContasConjuntas criarConta(@Valid ContasConjuntas contaConjunta) throws ContaExistenteException {
         if (contasConjuntasRepository.findById(contaConjunta.getContaConjuntaID()) != null) {
             throw new ContaConjuntaExistenteException("Conta conjunta já existe com ID: " + contaConjunta.getContaConjuntaID());
         }
         validarContaConjunta(contaConjunta);
-        contasConjuntasRepository.persist(contaConjunta);
+        
+        contaConjunta.setTipoConta(TipoConta.CONTA_CONJUNTA.toString());
+        
+        ContasConjuntas contasGerenciada = entityManager.merge(contaConjunta); // Mescla a entidade no contexto de persistência
+        entityManager.persist(contasGerenciada); // Persiste a entidade
+        
         return contaConjunta;
     }
 
@@ -71,30 +80,20 @@ public class ContasConjuntasService {
      * @throws ContaConjuntaNaoEncontradaException se a conta conjunta não for encontrada.
      */
     @Transactional
-    public ContasConjuntas atualizarContaConjunta(Long contaConjuntaID, ContasConjuntas contaConjunta) {
-        ContasConjuntas contaConjuntaExistente = contasConjuntasRepository.findById(contaConjuntaID);
+    public ContasConjuntas atualizarConta(Long contaID, @Valid ContasConjuntas contaConjunta) throws ContaNaoEncontradaException {
+        ContasConjuntas contaConjuntaExistente = contasConjuntasRepository.findById(contaID);
         if (contaConjuntaExistente == null) {
-            throw new ContaConjuntaNaoEncontradaException("Conta conjunta não encontrada com ID: " + contaConjuntaID);
+            throw new ContaConjuntaNaoEncontradaException("Conta conjunta não encontrada com ID: " + contaID);
         }
+        
         validarContaConjunta(contaConjunta);
-        contaConjunta.setContaConjuntaID(contaConjuntaID);
-        contasConjuntasRepository.persist(contaConjunta);
-        return contaConjunta;
-    }
 
-    /**
-     * Remove uma conta conjunta bancária existente.
-     *
-     * @param contaConjuntaID O ID da conta conjunta a ser removida.
-     * @throws ContaConjuntaNaoEncontradaException se a conta conjunta não for encontrada.
-     */
-    @Transactional
-    public void removerContaConjunta(Long contaConjuntaID) {
-        ContasConjuntas contaConjunta = contasConjuntasRepository.findById(contaConjuntaID);
-        if (contaConjunta == null) {
-            throw new ContaConjuntaNaoEncontradaException("Conta conjunta não encontrada com ID: " + contaConjuntaID);
-        }
-        contaConjunta.delete();
+        contaConjunta.setTipoConta(TipoConta.CONTA_CONJUNTA.toString());
+        
+        ContasConjuntas contasGerenciada = entityManager.merge(contaConjunta); // Mescla a entidade no contexto de persistência
+        entityManager.persist(contasGerenciada); // Persiste a entidade
+        
+        return contaConjunta;
     }
 
     /**
@@ -102,13 +101,12 @@ public class ContasConjuntasService {
      *
      * @param contaConjunta A conta conjunta bancária a ser validada.
      */
-    public void validarContaConjunta(ContasConjuntas contaConjunta) {
-        validarDataAbertura(contaConjunta.getDataAbertura());
-        validarSaldo(contaConjunta.getSaldo());
-        validarTitulares(contaConjunta.getTitulares());
-        validarTipoConta(contaConjunta.getTipoConta());
-        validarStatusConta(contaConjunta.getStatusConta());
-        validarAtiva(contaConjunta.isAtiva());
+    public void validarContaConjunta(ContasConjuntas contaConjuntas) {
+        validarDataAbertura(contaConjuntas.getDataAbertura());
+        validarSaldo(contaConjuntas.getSaldo());
+        validarTipoConta(contaConjuntas.getTipoConta());
+        validarStatusConta(contaConjuntas.getStatusConta());
+        validarAtiva(contaConjuntas.isAtiva());
     }
 
     /**
@@ -132,18 +130,6 @@ public class ContasConjuntasService {
             throw new IllegalArgumentException("Saldo inválido para a conta conjunta");
         }
     }
-    
-    /**
-     * Valida a lista de titulares de uma conta conjunta.
-     *
-     * @param titulares A lista de titulares da conta conjunta.
-     */
-    public void validarTitulares(String titulares) {
-        // Exemplo de validação: Verifica se a lista de titulares não está vazia.
-        if (titulares == null || titulares.isEmpty()) {
-            throw new IllegalArgumentException("A lista de titulares não pode estar vazia.");
-        }
-    }
 
     /**
      * Valida o tipo da conta conjunta.
@@ -151,8 +137,16 @@ public class ContasConjuntasService {
      * @param tipoConta O tipo da conta conjunta.
      */
     public void validarTipoConta(String tipoConta) {
-        // Exemplo de validação: Verifica se o tipo de conta é válido.
-        if (!tipoConta.equals("Conta Poupança") && !tipoConta.equals("Conta Corrente")) {
+        boolean tipoContaValido = false;
+        
+        for (TipoConta tipo : TipoConta.values()) {
+            if (tipo.name().equals(tipoConta)) {
+                tipoContaValido = true;
+                break;
+            }
+        }
+
+        if (!tipoContaValido) {
             throw new IllegalArgumentException("Tipo de conta inválido.");
         }
     }
@@ -163,7 +157,6 @@ public class ContasConjuntasService {
      * @param statusConta O status da conta conjunta.
      */
     public void validarStatusConta(String statusConta) {
-        // Exemplo de validação: Verifica se o status da conta é válido.
         if (!statusConta.equals("Ativa") && !statusConta.equals("Inativa")) {
             throw new IllegalArgumentException("Status de conta inválido.");
         }
@@ -175,9 +168,12 @@ public class ContasConjuntasService {
      * @param ativa Indica se a conta conjunta está ativa.
      */
     public void validarAtiva(boolean ativa) {
-        // Exemplo de validação: Verifica se a conta está ativa e possui saldo positivo.
         if (!ativa) {
             throw new IllegalArgumentException("A conta conjunta deve estar ativa.");
         }
     }
+
+	public void removerContasConjunta(Long id) {
+		contasConjuntasRepository.deleteById(id);
+	}
 }
