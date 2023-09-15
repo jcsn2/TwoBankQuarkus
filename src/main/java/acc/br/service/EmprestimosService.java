@@ -1,16 +1,12 @@
 package acc.br.service;
 
-import acc.br.exception.ClienteNaoEncontradoException;
 import acc.br.exception.EmprestimoExistenteException;
 import acc.br.exception.EmprestimoNaoEncontradoException;
-import acc.br.model.Clientes;
 import acc.br.model.Emprestimos;
-import acc.br.repository.ClientesRepository;
 import acc.br.repository.EmprestimosRepository;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -25,13 +21,6 @@ public class EmprestimosService {
     @Inject
     EmprestimosRepository emprestimosRepository;
 
-    @Inject
-    EntityManager entityManager;
-    
-    @Inject
-    ClientesRepository clientesRepository;
-
-
     /**
      * Cria um novo empréstimo no sistema.
      *
@@ -41,19 +30,13 @@ public class EmprestimosService {
     @Transactional
     public Emprestimos criarEmprestimo(Emprestimos emprestimo) {
         validarEmprestimo(emprestimo);
-        
-        Clientes clienteExistente = clientesRepository.findById(emprestimo.getClienteID());
-        if (clienteExistente == null) {
-            throw new ClienteNaoEncontradoException("Cliente n�o encontrado com ID: " + emprestimo.getClienteID());
-        }
 
         List<Emprestimos> emprestimosExistente = emprestimosRepository.findByClienteIDAndStatus(emprestimo.getClienteID(), emprestimo.getStatus());
         if (!emprestimosExistente.isEmpty()) {
             throw new EmprestimoExistenteException("Empréstimo já existente para este cliente com o mesmo status");
         }
-        Emprestimos emprestimoGerenciado = entityManager.merge(emprestimo); // Mescla a entidade no contexto de persistÃªncia
-        entityManager.persist(emprestimoGerenciado); // Persiste a entidade
-        return emprestimo;
+
+        return emprestimosRepository.salvarEmprestimo(emprestimo);
     }
 
 
@@ -67,17 +50,11 @@ public class EmprestimosService {
      */
     @Transactional
     public Emprestimos atualizarEmprestimo(Long id, Emprestimos emprestimo) {
-       // VerificaExistenciaEmprestimo(emprestimo); //Desnecessário a verificacão é feita abaixo
         validarEmprestimo(emprestimo);
 
         Emprestimos emprestimoExistente = emprestimosRepository.findById(id);
         if (emprestimoExistente == null) {
             throw new EmprestimoNaoEncontradoException("Empréstimo não encontrado");
-        }
-        
-        Clientes clienteExistente = clientesRepository.findById(emprestimo.getClienteID());
-        if (clienteExistente == null) {
-            throw new ClienteNaoEncontradoException("Cliente n�o encontrado com ID: " + emprestimo.getClienteID());
         }
 
         // Calcular o novo valor das parcelas com base na taxa de juros mensal
@@ -95,8 +72,6 @@ public class EmprestimosService {
         emprestimoExistente.setPrazoMeses(emprestimo.getPrazoMeses());
         emprestimoExistente.setValorParcelas(valorParcelas);
 
-        Emprestimos emprestimoGerenciado = entityManager.merge(emprestimoExistente); // Mescla a entidade no contexto de persistÃªncia
-        entityManager.persist(emprestimoGerenciado); // Persiste a entidade
         return emprestimoExistente;
     }
 
@@ -155,9 +130,9 @@ public class EmprestimosService {
      * @throws IllegalArgumentException Se algum dos campos do empréstimo não estiver de acordo com as regras de negócio.
      */
     private void validarEmprestimo(Emprestimos emprestimo) {
-        // if (emprestimo.getValorEmprestimo() == null || emprestimo.getValorEmprestimo().compareTo(BigDecimal.ZERO) <= 0) {
-        //     throw new IllegalArgumentException("O valor do empréstimo deve ser maior que zero.");
-        // }
+        if (emprestimo.getValorEmprestimo() == null || emprestimo.getValorEmprestimo().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("O valor do empréstimo deve ser maior que zero.");
+        }
 
         if (emprestimo.getTaxaJuros() == null || emprestimo.getTaxaJuros().compareTo(BigDecimal.ZERO) < 0 || emprestimo.getTaxaJuros().compareTo(new BigDecimal(100)) > 0) {
             throw new IllegalArgumentException("A taxa de juros deve estar entre 0% e 100%.");
@@ -181,11 +156,6 @@ public class EmprestimosService {
 
         if (emprestimo.getValorParcelas() == null || emprestimo.getValorParcelas().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("O valor das parcelas deve ser maior que zero.");
-        }
-    }
-    private void VerificaExistenciaEmprestimo(Emprestimos emprestimo) {
-        if (emprestimo.getValorEmprestimo() == null || emprestimo.getValorEmprestimo().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("O valor do empréstimo deve ser maior que zero.");
         }
     }
 

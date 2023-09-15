@@ -1,16 +1,11 @@
 package acc.br.service;
 
-import acc.br.exception.ClienteNaoEncontradoException;
 import acc.br.exception.InvestimentoNaoEncontradoException;
-import acc.br.model.Clientes;
-import acc.br.model.Emprestimos;
 import acc.br.model.Investimentos;
-import acc.br.repository.ClientesRepository;
 import acc.br.repository.InvestimentosRepository;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -23,16 +18,8 @@ import java.util.List;
 @ApplicationScoped
 public class InvestimentosService {
 
-    
-    @Inject
-    ClientesRepository clientesRepository;
-
     @Inject
     InvestimentosRepository investimentosRepository;
-
-    @Inject
-    EntityManager entityManager;
-
 
     /**
      * Cria um novo registro de investimento.
@@ -45,14 +32,7 @@ public class InvestimentosService {
         investimento.setDataInicio(LocalDate.now());
         investimento.setSaldoInvestimento(investimento.getSaldoInicial());
 
-        
-        Clientes clienteExistente = clientesRepository.findById(investimento.getClienteID());
-        if (clienteExistente == null) {
-            throw new ClienteNaoEncontradoException("Cliente não encontrado com ID: " + investimento.getClienteID());
-        }
-
-        Investimentos investimentoGerenciado = entityManager.merge(investimento); // Mescla a entidade no contexto de persistência
-        entityManager.persist(investimentoGerenciado); // Persiste a entidad
+        investimentosRepository.persist(investimento);
     }
 
     /**
@@ -69,11 +49,6 @@ public class InvestimentosService {
         if (entity == null) {
             throw new InvestimentoNaoEncontradoException("Registro de investimento não encontrado com o ID: " + id);
         }
-        
-        Clientes clienteExistente = clientesRepository.findById(investimento.getClienteID());
-        if (clienteExistente == null) {
-            throw new ClienteNaoEncontradoException("Cliente não encontrado com ID: " + investimento.getClienteID());
-        }
 
         // Atualize os campos relevantes de acordo com as regras de negócio
         entity.setNomeInvestimento(investimento.getNomeInvestimento());
@@ -81,8 +56,7 @@ public class InvestimentosService {
         entity.setSaldoInicial(investimento.getSaldoInicial());
         entity.setDataInicio(investimento.getDataInicio());
 
-         Investimentos investimentoGerenciado = entityManager.merge(entity); // Mescla a entidade no contexto de persistência
-        entityManager.persist(investimentoGerenciado); // Persiste a entidade;
+        investimentosRepository.persist(entity);
     }
 
     /**

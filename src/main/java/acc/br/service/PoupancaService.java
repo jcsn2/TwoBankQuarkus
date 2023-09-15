@@ -1,14 +1,24 @@
 package acc.br.service;
 
+import acc.br.exception.ContaExistenteException;
 import acc.br.exception.ParametroConfiguracaoNaoEncontradoException;
 import acc.br.exception.PoupancaNaoEncontradaException;
+import acc.br.interfaces.Conta;
+import acc.br.model.Clientes;
+import acc.br.model.Contas;
 import acc.br.model.ParametrosConfiguracao;
 import acc.br.model.Poupanca;
 import acc.br.repository.PoupancaRepository;
+import acc.br.util.PoupancaServiceQualifier;
+import acc.br.util.TipoConta;
+import acc.br.repository.ContasRepository;
 import acc.br.repository.ParametrosConfiguracaoRepository;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import javax.validation.Valid;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -18,23 +28,38 @@ import java.util.List;
  * Classe de serviço para a entidade Poupanca.
  */
 @ApplicationScoped
-public class PoupancaService {
-
+@PoupancaServiceQualifier
+public class PoupancaService extends ContasServiceImpl<Poupanca>{
+	
+	@Inject
+    ParametrosConfiguracaoRepository parametrosConfiguracaoRepository;
+    
     @Inject
     PoupancaRepository poupancaRepository;
-
+    
     @Inject
-    ParametrosConfiguracaoRepository parametrosConfiguracaoRepository;
+    EntityManager entityManager;
+
+    public PoupancaService(ContasRepository contasRepository) {
+        super(contasRepository);
+    }
 
     /**
      * Cria uma nova conta poupança.
      *
      * @param poupanca A conta poupança a ser criada.
      */
-    @Transactional
-    public void criarPoupanca(Poupanca poupanca) {
-        poupanca.setDataAbertura(LocalDate.now());
-        poupancaRepository.persist(poupanca);
+	@Transactional
+    @Override
+    public <T extends Conta> T criarConta(@Valid T conta) throws ContaExistenteException {
+        if (contasRepository.findById(conta.getContaID()) != null) {
+            throw new ContaExistenteException("Conta poupança já existe com ID: " + conta.getContaID());
+        }
+        conta.setTipoConta(TipoConta.CONTA_POUPANCA.toString());
+        
+        super.criarConta(conta);
+        
+        return conta;
     }
 
     /**
@@ -45,32 +70,17 @@ public class PoupancaService {
      * @throws PoupancaNaoEncontradaException Se a conta poupança não for encontrada.
      */
     @Transactional
-    public void atualizarPoupanca(Long id, Poupanca poupanca) throws PoupancaNaoEncontradaException {
-        Poupanca entity = poupancaRepository.findById(id);
-        if (entity == null) {
-            throw new PoupancaNaoEncontradaException("Conta poupança não encontrada com o ID: " + id);
+    @Override
+    public <T extends Conta> T atualizarConta(Long contaID, @Valid T conta) throws PoupancaNaoEncontradaException {
+        Contas contaPoupancaExistente = contasRepository.findById(contaID);
+        if (contaPoupancaExistente == null) {
+            throw new PoupancaNaoEncontradaException("Conta poupança não encontrada com ID: " + contaID);
         }
+        conta.setTipoConta(TipoConta.CONTA_POUPANCA.toString());
 
-        // Atualize os campos relevantes de acordo com as regras de negócio
-        entity.setSaldoPoupanca(poupanca.getSaldoPoupanca());
-        entity.setDataAniversario(poupanca.getDataAniversario());
-
-        poupancaRepository.persist(entity);
-    }
-
-    /**
-     * Obtém uma conta poupança pelo ID.
-     *
-     * @param id O ID da conta poupança a ser obtida.
-     * @return A conta poupança correspondente ao ID.
-     * @throws PoupancaNaoEncontradaException Se a conta poupança não for encontrada.
-     */
-    public Poupanca obterPoupanca(Long id) throws PoupancaNaoEncontradaException {
-        Poupanca poupanca = poupancaRepository.findById(id);
-        if (poupanca == null) {
-            throw new PoupancaNaoEncontradaException("Conta poupança não encontrada com o ID: " + id);
-        }
-        return poupanca;
+        super.atualizarConta(contaID, conta);
+        
+        return conta;
     }
 
     /**
@@ -80,21 +90,6 @@ public class PoupancaService {
      */
     public List<Poupanca> listarPoupancas() {
         return poupancaRepository.listAll();
-    }
-
-    /**
-     * Remove uma conta poupança pelo ID.
-     *
-     * @param id O ID da conta poupança a ser removida.
-     * @throws PoupancaNaoEncontradaException Se a conta poupança não for encontrada.
-     */
-    @Transactional
-    public void removerPoupanca(Long id) throws PoupancaNaoEncontradaException {
-        Poupanca poupanca = poupancaRepository.findById(id);
-        if (poupanca == null) {
-            throw new PoupancaNaoEncontradaException("Conta poupança não encontrada com o ID: " + id);
-        }
-        poupancaRepository.delete(poupanca);
     }
     
     /**
@@ -113,10 +108,8 @@ public class PoupancaService {
         String taxaPoupancaString = parametrosConfiguracao.getValorParametro();
 
         try {
-            // Converte a string para BigDecimal
             return new BigDecimal(taxaPoupancaString);
         } catch (NumberFormatException e) {
-            // Trate a exceção de conversão caso a string não seja um número válido.
             throw new ParametroConfiguracaoNaoEncontradoException("Erro ao converter 'TaxaPoupanca' para BigDecimal: " + e.getMessage());
         }
     }
@@ -129,7 +122,7 @@ public class PoupancaService {
      * @throws ParametroConfiguracaoNaoEncontradoException 
      */
     public BigDecimal calcularAtualizacaoMensal(Poupanca poupanca) throws ParametroConfiguracaoNaoEncontradoException {
-    	BigDecimal saldoAtual = poupanca.getSaldoPoupanca();
+    	BigDecimal saldoAtual = poupanca.getSaldo();
         BigDecimal taxaPoupanca = obterTaxaPoupancaComoBigDecimal(); 
         LocalDate dataAniversario = LocalDate.parse(poupanca.getDataAniversario());
 
@@ -139,6 +132,8 @@ public class PoupancaService {
             // Calcula a atualização mensal do saldo
         	BigDecimal atualizacaoMensal = saldoAtual.multiply(taxaPoupanca.divide(new BigDecimal(100), 4, RoundingMode.HALF_UP));
             saldoAtual = saldoAtual.add(atualizacaoMensal);
+            
+            poupanca.setSaldo(saldoAtual);
         }
 
         return saldoAtual;
