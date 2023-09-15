@@ -1,12 +1,17 @@
 package acc.br.controllers;
 
+import acc.br.exception.ClienteNaoEncontradoException;
 import acc.br.exception.ContaNaoEncontradaException;
 import acc.br.exception.NotificacaoNaoEncontradaException;
 import acc.br.exception.TransacoesNaoEncontradaException;
+import acc.br.model.Clientes;
+import acc.br.model.Contas;
 import acc.br.model.Transacoes;
+import acc.br.repository.ContasRepository;
 import acc.br.service.TransacoesService;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
@@ -26,6 +31,12 @@ public class TransacoesController {
 
     @Inject
     TransacoesService transacoesService;
+
+    @Inject
+    ContasRepository contasRepository;
+
+    @Inject
+    EntityManager entityManager;
 
     /**
      * Cria uma nova transação financeira.
@@ -133,6 +144,11 @@ public class TransacoesController {
     @GET
     @Path("/transferencias/{contaID}")
     public Response listarTransferenciasPorConta(@PathParam("contaID") Long contaID) {
+          
+        Contas contaExistente = contasRepository.findById(contaID);
+        if (contaExistente == null) {
+            throw new ContaNaoEncontradaException("Conta não encontrado com ID: " + contaID);
+        }
         try {
             List<Transacoes> transferencias = transacoesService.listarTransferenciasPorConta(contaID);
             return Response.ok().entity(transferencias).build();
@@ -170,7 +186,12 @@ public class TransacoesController {
     @POST
     @Path("/saque/{contaID}")
     @Transactional
-    public Response realizarSaque(@PathParam("contaID") Long contaID, @NotNull BigDecimal valor) {
+    public Response realizarSaque(@PathParam("contaID") Long contaID, @NotNull BigDecimal valor) {  
+
+        Contas contaExistente = contasRepository.findById(contaID);
+        if (contaExistente == null) {
+            throw new ContaNaoEncontradaException("Conta não encontrado com ID: " + contaID);
+        }
         try {
             transacoesService.realizarSaque(contaID, valor);
             return Response.status(Response.Status.OK).entity("Saque realizado com sucesso.").build();
@@ -192,6 +213,11 @@ public class TransacoesController {
     @Path("/deposito/{contaID}")
     @Transactional
     public Response depositar(@PathParam("contaID") Long contaID, @NotNull BigDecimal valor) {
+        
+        Contas contaExistente = contasRepository.findById(contaID);
+        if (contaExistente == null) {
+            throw new ContaNaoEncontradaException("Conta não encontrado com ID: " + contaID);
+        }
         try {
             transacoesService.depositar(contaID, valor);
             return Response.status(Response.Status.OK).entity("Depósito realizado com sucesso.").build();
@@ -209,11 +235,19 @@ public class TransacoesController {
      * @return A resposta HTTP 200 OK com a transação de transferência criada.
      */
     @POST
-    @Path("/transferencia/{contaOrigemID}/{contaDestinoID}")
+    @Path("/transferencia/{contaOrigemID}-{contaDestinoID}")
     @Transactional
     public Response transferir(@PathParam("contaOrigemID") Long contaOrigemID,
                                @PathParam("contaDestinoID") Long contaDestinoID,
                                @NotNull BigDecimal valor) {
+        Contas contaOrigemExistente = contasRepository.findById(contaOrigemID);
+        if (contaOrigemExistente == null) {
+            throw new ContaNaoEncontradaException("Conta não encontrado com ID: " + contaOrigemID);}
+
+        Contas contaDestinoExistente = contasRepository.findById(contaDestinoID);
+        if (contaDestinoExistente == null) {
+            throw new ContaNaoEncontradaException("Conta não encontrado com ID: " + contaDestinoID);}
+
         try {
             transacoesService.transferir(contaOrigemID, contaDestinoID, valor);
             return Response.status(Response.Status.OK).entity("Transferência realizada com sucesso.").build();

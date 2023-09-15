@@ -6,6 +6,7 @@ import acc.br.repository.NotificacoesRepository;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,6 +20,9 @@ public class NotificacoesService {
     @Inject
     NotificacoesRepository notificacoesRepository;
 
+    @Inject
+    EntityManager entityManager;
+
     /**
      * Cria uma nova notificação.
      *
@@ -27,13 +31,15 @@ public class NotificacoesService {
     @Transactional
     public void criarNotificacao(Notificacoes notificacao) {
         notificacao.setDataHoraNotificacao(LocalDateTime.now());
-        notificacoesRepository.persist(notificacao);
+        
+        Notificacoes notificacoesGerenciado = entityManager.merge(notificacao); // Mescla a entidade no contexto de persist�ncia
+        entityManager.persist(notificacoesGerenciado); // Persiste a entidade
     }
 
     /**
      * Atualiza uma notificação existente.
      *
-     * @param id           O ID da notificação a ser atualizada.
+     * @param id          O ID da notificação a ser atualizada.
      * @param notificacao A notificação com as atualizações.
      * @throws NotificacaoNaoEncontradaException Se a notificação não for encontrada.
      */
@@ -47,8 +53,9 @@ public class NotificacoesService {
         
         entity.setMensagemNotificacao(notificacao.getMensagemNotificacao());
         entity.setEnviada(notificacao.getEnviada());
-
-        notificacoesRepository.persist(entity);
+                
+        Notificacoes notificacoesGerenciado = entityManager.merge(notificacao); // Mescla a entidade no contexto de persist�ncia
+        entityManager.persist(notificacoesGerenciado); // Persiste a entidade
     }
 
     /**

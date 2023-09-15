@@ -1,18 +1,22 @@
 package acc.br.service;
 
+import acc.br.OpaGen;
 import acc.br.exception.AlertaNaoEncontradoException;
 import acc.br.exception.ContaNaoEncontradaException;
 import acc.br.exception.NotificacaoNaoEncontradaException;
 import acc.br.exception.TransacoesNaoEncontradaException;
 import acc.br.model.AlertasGastosExcessivos;
+import acc.br.model.Clientes;
 import acc.br.model.Contas;
 import acc.br.model.Notificacoes;
 import acc.br.model.Transacoes;
 import acc.br.repository.ContasRepository;
+import acc.br.repository.NotificacoesRepository;
 import acc.br.repository.TransacoesRepository;
 import acc.br.util.TipoTransacao;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -43,8 +47,15 @@ public class TransacoesService {
     @Inject
     Notificacoes notificacoes;
     
+    @Inject
+    NotificacoesRepository notificacoesRepository;
+    
     @Inject 
     NotificacoesService notificacoesService;
+
+    @Inject
+    EntityManager entityManager;
+
     
     /**
      * Cria uma nova transação financeira.
@@ -54,7 +65,8 @@ public class TransacoesService {
     @Transactional
     public void criarTransacao(Transacoes transacao) {
         transacao.setDataHoraTransacao(LocalDate.now());
-        transacoesRepository.persist(transacao);
+        Transacoes transacaoGerenciado = entityManager.merge(transacao); // Mescla a entidade no contexto de persistência
+        entityManager.persist(transacaoGerenciado); // Persiste a entidade
     }
 
     /**
@@ -77,7 +89,8 @@ public class TransacoesService {
         entity.setContaDestinoID(transacao.getContaDestinoID());
         entity.setNumeroCheque(transacao.getNumeroCheque());
 
-        transacoesRepository.persist(entity);
+        Transacoes transacaoGerenciado = entityManager.merge(transacao); // Mescla a entidade no contexto de persistência
+        entityManager.persist(transacaoGerenciado); // Persiste a entidade
     }
 
     /**
@@ -149,33 +162,38 @@ public class TransacoesService {
      * @throws NotificacaoNaoEncontradaException Se houver um problema com o serviço de notificações.
      */
     @Transactional
-    public void realizarSaque(Long contaID, @NotNull BigDecimal valor) throws NotificacaoNaoEncontradaException {
-    	
+    //testando fun;ão de saque sem o servico de excessão das notificacões.
+    public void realizarSaque(Long contaID, @NotNull BigDecimal valor)  {//throws NotificacaoNaoEncontradaException {
+
         if (valor.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("O valor do saque deve ser maior que zero.");
         }
-
+        
         Contas conta = contasRepository.findById(contaID);
         if (conta == null) {
             throw new ContaNaoEncontradaException("Conta não encontrada com ID: " + contaID);
         }
-
-        if (valor.compareTo(conta.getSaldo()) > 0) {
+        BigDecimal saldo = conta.getSaldo();
+        BigDecimal Limite = conta.getLimiteCredito();
+        BigDecimal saldoMaisLimite = saldo.add(Limite);
+        
+        if (valor.compareTo(saldoMaisLimite) > 0) {
             throw new IllegalArgumentException("Saldo insuficiente para realizar o saque.");
         }
         
         BigDecimal limiteSaque = alertasGastosExcessivos.getValorLimite();
+        //Forcando um Limite de saque para testes
+        limiteSaque = BigDecimal.valueOf(500.00);
 
         if (valor.compareTo(limiteSaque) > 0) {
             // O saque excede o limite, crie uma notificação de gasto excessivo
         	criarNotificacaoGastoExcessivo(conta, valor);
         }
-
+        
         // Prossiga com o saque normal
         BigDecimal novoSaldo = conta.getSaldo().subtract(valor);
         conta.setSaldo(novoSaldo);
         contasRepository.persist(conta);
-        
         
         Transacoes transacao = new Transacoes();
         transacao.setTipoTransacao(TipoTransacao.SAQUE);
@@ -183,14 +201,14 @@ public class TransacoesService {
         transacao.setValor(valor);
         transacao.setContaID(contaID); 
 
-        transacoesRepository.persist(transacao);
+        Transacoes transacaoGerenciado = entityManager.merge(transacao); // Mescla a entidade no contexto de persistência
+        entityManager.persist(transacaoGerenciado); // Persiste a entidade
         
         notificacoes.setClienteID(conta.getClienteID());
         notificacoes.setDataHoraNotificacao(LocalDateTime.now());
         notificacoes.setEnviada(1);
         notificacoes.setMensagemNotificacao("O Cliente: " + notificacoes.getClienteID() + " realizou um Tipo de Transação: " + transacao.getTipoTransacao() + " na data e hora: " + notificacoes.getDataHoraNotificacao() + " no valor de: R$ " + transacao.getValor());
-        
-        notificacoesService.criarNotificacao(notificacoes);
+       
     }
 
     /**
@@ -243,14 +261,20 @@ public class TransacoesService {
         transacao.setValor(valor);
         transacao.setContaID(contaID); 
 
-        transacoesRepository.persist(transacao);
+        Transacoes transacaoGerenciado = entityManager.merge(transacao); // Mescla a entidade no contexto de persistência
+        entityManager.persist(transacaoGerenciado); // Persiste a entidade
                 
         notificacoes.setClienteID(conta.getClienteID());
         notificacoes.setDataHoraNotificacao(LocalDateTime.now());
         notificacoes.setEnviada(1);
         notificacoes.setMensagemNotificacao("O Cliente: " + notificacoes.getClienteID() + " realizou um Tipo de Transação: " + transacao.getTipoTransacao() + " na data e hora: " + notificacoes.getDataHoraNotificacao() + " no valor de: R$ " + transacao.getValor());
         
-        notificacoesService.criarNotificacao(notificacoes);
+        //notificacoesService.criarNotificacao(notificacoes);
+        //Teste gravando notificacão sem chamar NotificacaoService
+        //Não funcionou
+        // Notificacoes notificacoesGerenciado = entityManager.merge(notificacoes); // Mescla a entidade no contexto de persist�ncia
+        // entityManager.persist(notificacoesGerenciado); // Persiste a entidade
+        
     }
 
     /**
@@ -294,7 +318,8 @@ public class TransacoesService {
         transacao.setContaID(contaOrigemID); 
         transacao.setContaDestinoID(contaDestinoID);
 
-        transacoesRepository.persist(transacao);
+        Transacoes transacaoGerenciado = entityManager.merge(transacao); // Mescla a entidade no contexto de persistência
+        entityManager.persist(transacaoGerenciado); // Persiste a entidade
                 
         notificacoes.setClienteID(contaOrigemID);
         notificacoes.setDataHoraNotificacao(LocalDateTime.now());
