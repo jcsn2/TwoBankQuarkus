@@ -67,5 +67,5 @@ public class InvestimentosTest {
 
         assertEquals(new BigDecimal("1000.00"), investimento.getSaldoInicial());
     }
-    
+
 }
