@@ -351,12 +351,18 @@ public class Clientes extends PanacheEntityBase {
     public void setDataRegistro(LocalDate dataRegistro) {
     	this.dataRegistro = dataRegistro;
     }
-    
+
+    public void setAtivo(boolean ativo) {
+        this.ativo = ativo;
+    }
+
     /**
      * Verifica se o cliente está ativo.
      *
      * @return true se o cliente estiver ativo, caso contrário, false.
      */
+
+
     public boolean isAtivo() {
         return ativo;
     }
