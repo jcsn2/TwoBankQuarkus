@@ -154,7 +154,7 @@ public class EmprestimosService {
      * @param emprestimo O empréstimo a ser validado.
      * @throws IllegalArgumentException Se algum dos campos do empréstimo não estiver de acordo com as regras de negócio.
      */
-    private void validarEmprestimo(Emprestimos emprestimo) {
+    public void validarEmprestimo(Emprestimos emprestimo) {
         // if (emprestimo.getValorEmprestimo() == null || emprestimo.getValorEmprestimo().compareTo(BigDecimal.ZERO) <= 0) {
         //     throw new IllegalArgumentException("O valor do empréstimo deve ser maior que zero.");
         // }

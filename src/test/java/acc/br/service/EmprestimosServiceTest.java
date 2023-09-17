@@ -4,7 +4,6 @@ import acc.br.model.*;
 import acc.br.repository.*;
 import acc.br.exception.*;
 
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,7 +28,7 @@ class EmprestimosServiceTest {
 
     @Inject
     EmprestimosService emprestimosService;
-    
+
     @Inject
     EmprestimosRepository emprestimosRepository;
 
@@ -87,9 +86,10 @@ class EmprestimosServiceTest {
             // O empréstimo foi rejeitado, como esperado
         }
     }
+
     @Test
     void deveAtualizarEmprestimoComSucesso() {
-        //Objeto data
+        // Objeto data
         LocalDate myDateObj = LocalDate.now();
         // Cria um emprestimo
         Emprestimos emprestimo = new Emprestimos();
@@ -111,7 +111,8 @@ class EmprestimosServiceTest {
         emprestimo.setPrazoMeses(24);
 
         // Atualiza o emprestimo
-        Emprestimos emprestimoAtualizado = emprestimosService.atualizarEmprestimo(emprestimo.getEmprestimoID(), emprestimo);
+        Emprestimos emprestimoAtualizado = emprestimosService.atualizarEmprestimo(emprestimo.getEmprestimoID(),
+                emprestimo);
 
         // Valida os dados atualizados
         assertEquals(BigDecimal.valueOf(2000), emprestimoAtualizado.getValorEmprestimo());
@@ -134,7 +135,7 @@ class EmprestimosServiceTest {
 
     @Test
     void deveLancarExcecaoClienteNaoEncontrado() {
-        //Objeto data
+        // Objeto data
         LocalDate myDateObj = LocalDate.now();
         // Cria um emprestimo
         Emprestimos emprestimo = new Emprestimos();
@@ -157,7 +158,8 @@ class EmprestimosServiceTest {
             emprestimosService.atualizarEmprestimo(emprestimo.getEmprestimoID(), emprestimo);
         });
     }
-@Test
+
+    @Test
     void calcularValorParcelas_valorEmprestimo1000_taxaJuros10_prazo12_valorParcelas166_66() {
         // Arrange
         BigDecimal valorEmprestimo = BigDecimal.valueOf(1000);
@@ -165,7 +167,8 @@ class EmprestimosServiceTest {
         int prazoMeses = 12;
 
         // Act
-        BigDecimal valorParcelas = emprestimosService.calcularValorParcelas(valorEmprestimo, taxaJurosMensal, prazoMeses);
+        BigDecimal valorParcelas = emprestimosService.calcularValorParcelas(valorEmprestimo, taxaJurosMensal,
+                prazoMeses);
 
         // Assert
         Assertions.assertEquals(BigDecimal.valueOf(166.66), valorParcelas);
@@ -216,4 +219,88 @@ class EmprestimosServiceTest {
         Assertions.assertEquals(emprestimo2, emprestimos.get(1));
     }
 
+    @Test
+    public void testBuscarEmprestimoPorId_EmprestimoExiste_EmprestimoRetornado() {
+        // Cria um empréstimo
+        Emprestimos emprestimo = new Emprestimos();
+        emprestimo.setEmprestimoID(1L);
+
+        // Salva o empréstimo no banco de dados
+        emprestimosRepository.persist(emprestimo);
+
+        // Realiza a busca pelo empréstimo
+        Emprestimos emprestimoEncontrado = emprestimosService.buscarEmprestimoPorId(emprestimo.getEmprestimoID());
+
+        // Valida que o empréstimo encontrado é o mesmo que foi salvo
+        assertEquals(emprestimo, emprestimoEncontrado);
+    }
+
+    @Test
+    public void testBuscarEmprestimoPorId_EmprestimoNaoExiste_EmprestimoNuloRetornado() {
+        // Realiza a busca pelo empréstimo
+        Emprestimos emprestimoEncontrado = emprestimosService.buscarEmprestimoPorId(1L);
+
+        // Valida que o empréstimo encontrado é nulo
+        assertNull(emprestimoEncontrado);
+    }
+
+    @Test
+    public void testValidarEmprestimo_ValorEmprestimoMaiorQueZero_Valido() {
+        // Cria um empréstimo com valor maior que zer
+        Emprestimos emprestimo = new Emprestimos();
+        emprestimo.setValorEmprestimo(new BigDecimal(100));
+
+        // Valida o empréstim
+        emprestimosService.validarEmprestimo(emprestimo);
+    }
+
+    @Test
+    public void testValidarEmprestimo_ValorEmprestimoIgualAZero_Invalido() {
+        // Cria um empréstimo com valor igual a zer
+        Emprestimos emprestimo = new Emprestimos();
+        emprestimo.setValorEmprestimo(new BigDecimal(0));
+
+        // Tenta validar o empréstim
+        try {
+            emprestimosService.validarEmprestimo(emprestimo);
+            fail("Exceção esperada");
+        } catch (IllegalArgumentException e) {
+            // Valida a exceç�
+            assertEquals("O valor do empréstimo deve ser maior que zero.", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testValidarEmprestimo_TaxaJurosEntre0E100_Valido() {
+        // Cria um empréstimo com taxa de juros entre 0% e 100
+        Emprestimos emprestimo = new Emprestimos();
+        emprestimo.setTaxaJuros(new BigDecimal(50));
+
+        // Valida o empréstim
+        emprestimosService.validarEmprestimo(emprestimo);
+    }
+
+    @Test
+    public void testValidarEmprestimo_TaxaJurosMenorQue0_Invalido() {
+        // Cria um empréstimo com taxa de juros menor que 0
+        Emprestimos emprestimo = new Emprestimos();
+        emprestimo.setTaxaJuros(new BigDecimal(-50));
+
+        // Tenta validar o empréstim
+        try {
+            emprestimosService.validarEmprestimo(emprestimo);
+            fail("Exceção esperada");
+        } catch (IllegalArgumentException e) {
+            // Valida a exceç�
+            assertEquals("A taxa de juros deve estar entre 0% e 100%.", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testValidarEmprestimo_TaxaJurosMaiorQue100_Invalido() {
+        // Cria um empréstimo com taxa de juros maior que 100
+        Emprestimos emprestimo = new Emprestimos();
+        emprestimo.setTaxaJuros(new BigDecimal(150));
+
+    }
 }
