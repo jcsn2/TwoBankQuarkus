@@ -4,6 +4,8 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import acc.br.util.TipoConta;
 import acc.br.util.TipoTransacao;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
@@ -67,6 +69,11 @@ public class Transacoes extends PanacheEntityBase {
     @Size(max = 20, message = "{quarkus.hibernate-validator.message.size.transacoes.numeroCheque}")
     @Column(name = "NumeroCheque")
     private String numeroCheque;
+    
+    @NotNull(message = "{quarkus.hibernate-validator.message.notNull.transacoes.tipoConta}")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "TipoConta")
+    private TipoConta tipoConta;
 
     // Getters e setters
 
@@ -194,5 +201,23 @@ public class Transacoes extends PanacheEntityBase {
      */
     public void setNumeroCheque(String numeroCheque) {
         this.numeroCheque = numeroCheque;
+    }
+    
+    /**
+     * Obtém o tipo da conta.
+     *
+     * @return O tipo da conta.
+     */
+    public TipoConta getTipoConta() {
+        return tipoConta;
+    }
+
+    /**
+     * Define o tipo da conta.
+     *
+     * @param tipoConta O tipo da conta.
+     */
+    public void setTipoConta(TipoConta tipoConta) {
+        this.tipoConta = tipoConta;
     }
 }
