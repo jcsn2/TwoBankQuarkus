@@ -108,7 +108,7 @@ public class EmprestimosService {
      * @param prazoMeses         O prazo em meses para pagamento do empréstimo.
      * @return O valor das parcelas mensais do empréstimo.
      */
-    private BigDecimal calcularValorParcelas(BigDecimal valorEmprestimo, BigDecimal taxaJurosMensal, int prazoMeses) {
+    public BigDecimal calcularValorParcelas(BigDecimal valorEmprestimo, BigDecimal taxaJurosMensal, int prazoMeses) {
         BigDecimal umMaisTaxaJurosMensalElevadoPrazo = BigDecimal.ONE.add(taxaJurosMensal).pow(prazoMeses);
         return valorEmprestimo.multiply(taxaJurosMensal).multiply(umMaisTaxaJurosMensalElevadoPrazo).divide(umMaisTaxaJurosMensalElevadoPrazo.subtract(BigDecimal.ONE), 2, RoundingMode.HALF_UP);
     }
