@@ -6,15 +6,15 @@
   <artifactId>two-bank-quarkus</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <properties>
-    <compiler-plugin.version>3.11.0</compiler-plugin.version>
-    <maven.compiler.release>17</maven.compiler.release>
+    <compiler-plugin.version>3.8.1</compiler-plugin.version>
+    <maven.compiler.release>11</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>3.3.2</quarkus.platform.version>
+    <quarkus.platform.version>2.11.3.Final</quarkus.platform.version>
     <skipITs>true</skipITs>
-    <surefire-plugin.version>3.1.2</surefire-plugin.version>
+    <surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -35,62 +35,8 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-security-webauthn</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-jsonb</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.camel.quarkus</groupId>
-      <artifactId>camel-quarkus-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-info</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy-jsonb</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-kafka-client</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-resteasy</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-smallrye-jwt</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-hibernate-reactive-rest-data-panache</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-jdbc-mysql</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-hibernate-orm-rest-data-panache</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-grpc</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.camel.quarkus</groupId>
-      <artifactId>camel-quarkus-telegram</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-elytron-security-oauth2</artifactId>
-    </dependency>
+
+
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-hibernate-validator</artifactId>
@@ -98,10 +44,6 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-openapi</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -113,19 +55,15 @@
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-mailer</artifactId>
+      <artifactId>quarkus-resteasy</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-kafka-streams</artifactId>
+      <artifactId>quarkus-resteasy-jackson</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-security-jpa</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-cache</artifactId>
+      <artifactId>quarkus-jdbc-mysql</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -145,6 +83,17 @@
       <artifactId>rest-assured</artifactId>
       <scope>test</scope>
     </dependency>
+      <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <version>4.13.2</version>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.testng</groupId>
+          <artifactId>testng</artifactId>
+          <scope>test</scope>
+      </dependency>
   </dependencies>
   <build>
     <plugins>
