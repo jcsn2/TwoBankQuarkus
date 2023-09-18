@@ -10,6 +10,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Controlador REST para a entidade HistoricoTransacoes.
@@ -22,6 +24,9 @@ public class HistoricoTransacoesController {
 
     @Inject
     HistoricoTransacoesService historicoTransacoesService;
+    
+    private static final int HTTP_OK = Response.Status.OK.getStatusCode();
+    private static final Logger logger = Logger.getLogger(HistoricoTransacoesController.class.getName());
 
     /**
      * Cria um novo registro de histórico de transações.
@@ -33,8 +38,10 @@ public class HistoricoTransacoesController {
     public Response criarHistoricoTransacoes(@Valid HistoricoTransacoes historicoTransacoes) {
         try {
             historicoTransacoesService.criarHistoricoTransacoes(historicoTransacoes);
-            return Response.status(Response.Status.CREATED).build();
+            logger.info("Historico Transações criado com sucesso: " + historicoTransacoes);
+            return Response.status(HTTP_OK).build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao criar historico transações: " + e.getMessage(), e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Erro ao criar histórico de transações.").build();
         }
     }
@@ -51,10 +58,13 @@ public class HistoricoTransacoesController {
     public Response atualizarHistoricoTransacoes(@PathParam("id") Long id, @Valid HistoricoTransacoes historicoTransacoes) {
         try {
             historicoTransacoesService.atualizarHistoricoTransacoes(id, historicoTransacoes);
-            return Response.status(Response.Status.OK).build();
+            logger.info("Historico Transações atualizado com sucesso: " + historicoTransacoes);
+            return Response.status(HTTP_OK).build();
         } catch (HistoricoTransacoesNaoEncontradoException e) {
+        	logger.log(Level.SEVERE, "Erro ao atualizar historico transações: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND).entity("Registro de histórico de transações não encontrado.").build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao atualizar historico transações: " + e.getMessage(), e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Erro ao atualizar histórico de transações.").build();
         }
     }
@@ -70,10 +80,13 @@ public class HistoricoTransacoesController {
     public Response obterHistoricoTransacoes(@PathParam("id") Long id) {
         try {
             HistoricoTransacoes historicoTransacoes = historicoTransacoesService.obterHistoricoTransacoes(id);
-            return Response.status(Response.Status.OK).entity(historicoTransacoes).build();
+            logger.info("Historico Transações obtido com sucesso: " + id);
+            return Response.status(HTTP_OK).entity(historicoTransacoes).build();
         } catch (HistoricoTransacoesNaoEncontradoException e) {
-            return Response.status(Response.Status.NOT_FOUND).entity("Registro de histórico de transações não encontrado.").build();
+        	logger.log(Level.SEVERE, "Erro ao obter historico transações: " + e.getMessage(), e);
+        	return Response.status(Response.Status.NOT_FOUND).entity("Registro de histórico de transações não encontrado.").build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao obter historico transações: " + e.getMessage(), e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Erro ao obter histórico de transações.").build();
         }
     }
@@ -87,8 +100,10 @@ public class HistoricoTransacoesController {
     public Response listarHistoricoTransacoes() {
         try {
             List<HistoricoTransacoes> historicoTransacoesList = historicoTransacoesService.listarHistoricoTransacoes();
-            return Response.status(Response.Status.OK).entity(historicoTransacoesList).build();
+            logger.info("Historico Transações listado com sucesso");
+            return Response.status(HTTP_OK).entity(historicoTransacoesList).build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao listar historico transações: " + e.getMessage(), e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Erro ao listar histórico de transações.").build();
         }
     }
@@ -104,10 +119,13 @@ public class HistoricoTransacoesController {
     public Response removerHistoricoTransacoes(@PathParam("id") Long id) {
         try {
             historicoTransacoesService.removerHistoricoTransacoes(id);
-            return Response.status(Response.Status.NO_CONTENT).build();
+            logger.info("Historico Transações removido com sucesso" + id);
+            return Response.status(HTTP_OK).build();
         } catch (HistoricoTransacoesNaoEncontradoException e) {
+        	logger.log(Level.SEVERE, "Erro ao remover historico transações: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND).entity("Registro de histórico de transações não encontrado.").build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao remover historico transações: " + e.getMessage(), e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Erro ao remover histórico de transações.").build();
         }
     }

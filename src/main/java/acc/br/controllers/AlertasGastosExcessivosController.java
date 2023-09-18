@@ -11,7 +11,11 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 /**
  * Controlador REST para manipulação de alertas de gastos excessivos.
@@ -25,6 +29,9 @@ public class AlertasGastosExcessivosController {
     @Inject
     AlertasGastosExcessivosService alertasService;
 
+    private static final int HTTP_OK = Response.Status.OK.getStatusCode();
+    private static final Logger logger = Logger.getLogger(AlertasGastosExcessivosController.class.getName());
+
     /**
      * Cria um novo alerta de gastos excessivos.
      *
@@ -36,8 +43,10 @@ public class AlertasGastosExcessivosController {
     public Response criarAlerta(@Valid @NotNull AlertasGastosExcessivos alerta) {
         try {
             alertasService.criarAlerta(alerta);
-            return Response.status(Response.Status.CREATED).build();
+            logger.info("Alerta criado com sucesso: " + alerta.getAlertaID()); 
+            return Response.status(HTTP_OK).build();
         } catch (ClienteNaoEncontradoException e) {
+            logger.log(Level.SEVERE, "Erro ao criar alerta: " + e.getMessage(), e);
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
     }
@@ -54,10 +63,13 @@ public class AlertasGastosExcessivosController {
     public Response atualizarAlerta(@Valid @NotNull AlertasGastosExcessivos alerta) {
         try {
             alertasService.atualizarAlerta(alerta);
-            return Response.status(Response.Status.OK).build();
+            logger.info("Alerta atualizado com sucesso: " + alerta.getAlertaID());
+            return Response.status(HTTP_OK).build();
         } catch (AlertaNaoEncontradoException e) {
+            logger.log(Level.SEVERE, "Erro ao atualizar alerta: " + e.getMessage(), e); 
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (ClienteNaoEncontradoException e) {
+            logger.log(Level.SEVERE, "Erro ao atualizar alerta: " + e.getMessage(), e);
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
     }
@@ -74,8 +86,10 @@ public class AlertasGastosExcessivosController {
     public Response deletarAlerta(@PathParam("alertaId") Long alertaId) {
         try {
             alertasService.deletarAlerta(alertaId);
-            return Response.status(Response.Status.NO_CONTENT).build();
+            logger.info("Alerta deletado com sucesso: " + alertaId);
+            return Response.status(HTTP_OK).build();
         } catch (AlertaNaoEncontradoException e) {
+            logger.log(Level.SEVERE, "Erro ao deletar alerta: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         }
     }
@@ -89,7 +103,8 @@ public class AlertasGastosExcessivosController {
     @GET
     @Path("/cliente/{clienteId}")
     public List<AlertasGastosExcessivos> listarAlertasPorCliente(@PathParam("clienteId") Long clienteId) {
-        return alertasService.listarAlertasPorCliente(clienteId);
+    	logger.info("Alertas listados com sucesso: " + clienteId);
+    	return alertasService.listarAlertasPorCliente(clienteId);
     }
 
     /**
@@ -104,8 +119,10 @@ public class AlertasGastosExcessivosController {
     public Response buscarAlertaPorId(@PathParam("alertaId") Long alertaId) {
         AlertasGastosExcessivos alerta = alertasService.buscarAlertaPorId(alertaId);
         if (alerta != null) {
-            return Response.status(Response.Status.OK).entity(alerta).build();
+        	logger.info("Alertas buscado com sucesso: " + alertaId);
+            return Response.status(HTTP_OK).entity(alerta).build();
         } else {
+            logger.log(Level.SEVERE, "Erro ao buscar alerta" );
             return Response.status(Response.Status.NOT_FOUND).entity("Alerta não encontrado").build();
         }
     }

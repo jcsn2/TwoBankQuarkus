@@ -31,9 +31,10 @@ public class NotificacoesService {
     @Transactional
     public void criarNotificacao(Notificacoes notificacao) {
         notificacao.setDataHoraNotificacao(LocalDateTime.now());
-        
+
         Notificacoes notificacoesGerenciado = entityManager.merge(notificacao); // Mescla a entidade no contexto de persist�ncia
         entityManager.persist(notificacoesGerenciado); // Persiste a entidade
+        
     }
 
     /**

@@ -12,6 +12,8 @@ import javax.ws.rs.core.Response;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Controlador para a entidade Investimentos.
@@ -24,19 +26,25 @@ public class InvestimentosController {
 
     @Inject
     InvestimentosService investimentosService;
+    
+    private static final int HTTP_OK = Response.Status.OK.getStatusCode();
+    private static final Logger logger = Logger.getLogger(InvestimentosController.class.getName());
+
 
     /**
      * Cria um novo registro de investimento.
      *
      * @param investimento O objeto Investimentos a ser criado.
-     * @return Uma resposta HTTP com o status 201 CREATED e o investimento criado.
+     * @return Uma resposta HTTP com o status 200 OK e o investimento criado.
      */
     @POST
     public Response criarInvestimento(Investimentos investimento) {
         try {
             investimentosService.criarInvestimento(investimento);
-            return Response.status(Response.Status.CREATED).entity(investimento).build();
+            logger.info("Investimento criado com sucesso: " + investimento);
+            return Response.status(HTTP_OK).entity(investimento).build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao criar investimento: " + e.getMessage(), e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
     }
@@ -54,10 +62,13 @@ public class InvestimentosController {
     public Response atualizarInvestimento(@PathParam("id") Long id, Investimentos investimento) {
         try {
             investimentosService.atualizarInvestimento(id, investimento);
-            return Response.status(Response.Status.OK).entity(investimento).build();
+            logger.info("Investimento atualizado com sucesso: " + investimento);
+            return Response.status(HTTP_OK).entity(investimento).build();
         } catch (InvestimentoNaoEncontradoException e) {
+        	logger.log(Level.SEVERE, "Erro ao atualizar investimento: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao atualizar investimento: " + e.getMessage(), e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
     }
@@ -74,10 +85,13 @@ public class InvestimentosController {
     public Response obterInvestimento(@PathParam("id") Long id) {
         try {
             Investimentos investimento = investimentosService.obterInvestimento(id);
-            return Response.status(Response.Status.OK).entity(investimento).build();
+            logger.info("Investimento obtido com sucesso: " + id);
+            return Response.status(HTTP_OK).entity(investimento).build();
         } catch (InvestimentoNaoEncontradoException e) {
+        	logger.log(Level.SEVERE, "Erro ao obter investimento: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao obter investimento: " + e.getMessage(), e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
     }
@@ -91,8 +105,10 @@ public class InvestimentosController {
     public Response listarInvestimentos() {
         try {
             List<Investimentos> investimentos = investimentosService.listarInvestimentos();
-            return Response.status(Response.Status.OK).entity(investimentos).build();
+            logger.info("Investimento listado com sucesso");
+            return Response.status(HTTP_OK).entity(investimentos).build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao listas investimento: " + e.getMessage(), e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
     }
@@ -101,7 +117,7 @@ public class InvestimentosController {
      * Remove um registro de investimento pelo ID.
      *
      * @param id O ID do registro de investimento a ser removido.
-     * @return Uma resposta HTTP com o status 204 NO CONTENT.
+     * @return Uma resposta HTTP com o status 200 OK.
      * @throws InvestimentoNaoEncontradoException Se o registro de investimento não for encontrado.
      */
     @DELETE
@@ -109,10 +125,13 @@ public class InvestimentosController {
     public Response removerInvestimento(@PathParam("id") Long id) {
         try {
             investimentosService.removerInvestimento(id);
-            return Response.status(Response.Status.NO_CONTENT).build();
+            logger.info("Investimento removido com sucesso: " + id);
+            return Response.status(HTTP_OK).build();
         } catch (InvestimentoNaoEncontradoException e) {
+        	logger.log(Level.SEVERE, "Erro ao remover investimento: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao remover investimento: " + e.getMessage(), e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
     }
@@ -129,8 +148,10 @@ public class InvestimentosController {
     public Response calcularRetornoInvestimento(@PathParam("id") Long id) throws InvestimentoNaoEncontradoException {
         try {
             BigDecimal retorno = investimentosService.calcularRetornoInvestimento(PanacheEntityBase.findById(id));
-            return Response.status(Response.Status.OK).entity(retorno).build();
+            logger.info("Investimento calculado com sucesso: " + id);
+            return Response.status(HTTP_OK).entity(retorno).build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao calcular investimento: " + e.getMessage(), e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
     }
@@ -146,8 +167,10 @@ public class InvestimentosController {
     public Response listarInvestimentosPorCliente(@PathParam("clienteID") Integer clienteID) {
         try {
             List<Investimentos> investimentos = investimentosService.listarInvestimentosPorCliente(clienteID);
-            return Response.status(Response.Status.OK).entity(investimentos).build();
+            logger.info("Investimento listado com sucesso: " + clienteID);
+            return Response.status(HTTP_OK).entity(investimentos).build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao listar investimento: " + e.getMessage(), e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
     }

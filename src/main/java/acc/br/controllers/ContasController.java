@@ -19,6 +19,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -48,6 +50,9 @@ public class ContasController {
     
     @Inject
     PoupancaRepository poupancaRepository;
+    
+    private static final int HTTP_OK = Response.Status.OK.getStatusCode();
+    private static final Logger logger = Logger.getLogger(ContasController.class.getName());
 
     /**
      * Lista todas as contas correntes cadastradas no sistema.
@@ -57,6 +62,7 @@ public class ContasController {
     @GET
     @Path("/correntes")
     public List<ContaCorrente> listarContasCorrentes() {
+    	logger.info("Contas correntes listadas com sucesso");
         return contaCorrenteService.listarContasCorrentes();
     }
 
@@ -68,6 +74,7 @@ public class ContasController {
     @GET
     @Path("/poupanca")
     public List<Poupanca> listarContasPoupanca() {
+    	logger.info("Contas Poupanças listadas com sucesso");
         return poupancaService.listarPoupancas();
     }
 
@@ -79,6 +86,7 @@ public class ContasController {
     @GET
     @Path("/conjuntas")
     public List<ContasConjuntas> listarContasConjuntas() {
+    	logger.info("Contas Conjuntas listadas com sucesso");
         return contasConjuntasService.listarContasConjuntas();
     }
 
@@ -94,8 +102,10 @@ public class ContasController {
     public Response obterContaCorrente(@PathParam("contaID") Long contaID) {
         try {
             Contas contaCorrente = contaCorrenteRepository.findById(contaID);
-            return Response.status(Response.Status.OK).entity(contaCorrente).build();
+            logger.info("Conta corrente obtida com sucesso: " + contaID);
+            return Response.status(HTTP_OK).entity(contaCorrente).build();
         } catch (ContaNaoEncontradaException e) {
+        	logger.log(Level.SEVERE, "Erro ao obter conta corrente: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         }
     }
@@ -112,8 +122,10 @@ public class ContasController {
     public Response obterContaPoupanca(@PathParam("contaID") Long contaID) {
         try {
         	Poupanca contaPoupanca = poupancaRepository.findById(contaID);
-            return Response.status(Response.Status.OK).entity(contaPoupanca).build();
+        	logger.info("Conta poupança obtida com sucesso: " + contaID);
+            return Response.status(HTTP_OK).entity(contaPoupanca).build();
         } catch (ContaNaoEncontradaException e) {
+        	logger.log(Level.SEVERE, "Erro ao obter conta poupança: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         }
     }
@@ -130,8 +142,10 @@ public class ContasController {
     public Response obterContaConjunta(@PathParam("contaID") Long contaID) {
         try {
             ContasConjuntas contaConjunta = contasConjuntasRepository.findById(contaID);
-            return Response.status(Response.Status.OK).entity(contaConjunta).build();
+            logger.info("Conta conjunta obtida com sucesso: " + contaID);
+            return Response.status(HTTP_OK).entity(contaConjunta).build();
         } catch (ContaNaoEncontradaException e) {
+        	logger.log(Level.SEVERE, "Erro ao obter conta conjunta: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         }
     }

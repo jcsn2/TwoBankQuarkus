@@ -12,7 +12,6 @@ import acc.br.exception.ContaCorrenteNaoEncontradaException;
 import acc.br.exception.ContaExistenteException;
 import acc.br.exception.ContaNaoEncontradaException;
 import acc.br.model.ContaCorrente;
-import acc.br.model.Poupanca;
 import acc.br.repository.ContaCorrenteRepository;
 import acc.br.util.TipoConta;
 

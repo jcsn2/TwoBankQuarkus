@@ -7,7 +7,6 @@ import java.time.LocalDate;
 
 import acc.br.util.TipoConta;
 import acc.br.util.TipoTransacao;
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
 /**

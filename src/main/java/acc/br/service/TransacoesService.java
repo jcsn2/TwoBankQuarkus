@@ -16,7 +16,6 @@ import acc.br.model.Poupanca;
 import acc.br.model.Transacoes;
 import acc.br.repository.ContaCorrenteRepository;
 import acc.br.repository.ContasConjuntasRepository;
-import acc.br.repository.NotificacoesRepository;
 import acc.br.repository.PoupancaRepository;
 import acc.br.repository.TransacoesRepository;
 import acc.br.util.TipoConta;
@@ -60,16 +59,13 @@ public class TransacoesService {
     @Inject
     Notificacoes notificacoes;
     
-    @Inject
-    NotificacoesRepository notificacoesRepository;
-    
     @Inject 
     NotificacoesService notificacoesService;
 
     @Inject
     EntityManager entityManager;
-
     
+   
     /**
      * Cria uma nova transação financeira.
      *
@@ -155,6 +151,28 @@ public class TransacoesService {
         return transacoesRepository.find("tipoTransacao = ?1 and contaID = ?2",
                 TipoTransacao.TRANSFERENCIA, contaID).list();
     }
+    
+    /**
+     * Lista todos os saques de uma determinada conta com base no ID da conta.
+     *
+     * @param contaID O ID da conta para a qual deseja listar os saques.
+     * @return Uma lista de saques associadas à conta.
+     */
+    public List<Transacoes> listarSaquesPorConta(Long contaID) {
+        return transacoesRepository.find("tipoTransacao = ?1 and contaID = ?2",
+                TipoTransacao.SAQUE, contaID).list();
+    }
+    
+    /**
+     * Lista todos os depositos de uma determinada conta com base no ID da conta.
+     *
+     * @param contaID O ID da conta para a qual deseja listar os saques.
+     * @return Uma lista de depositos associadas à conta.
+     */
+    public List<Transacoes> listarDepositosPorConta(Long contaID) {
+        return transacoesRepository.find("tipoTransacao = ?1 and contaID = ?2",
+                TipoTransacao.DEPOSITO, contaID).list();
+    }
 
     /**
      * Lista todas as transferências a partir de um valor mínimo.
@@ -165,6 +183,28 @@ public class TransacoesService {
     public List<Transacoes> listarTransferenciasPorValorMinimo(BigDecimal valorMinimo) {
         return transacoesRepository.find("tipoTransacao = ?1 and valor >= ?2",
                 TipoTransacao.TRANSFERENCIA, valorMinimo).list();
+    }
+    
+    /**
+     * Lista todos os saques a partir de um valor mínimo.
+     *
+     * @param valorMinimo O valor mínimo dos saques desejadas.
+     * @return Uma lista de saques com valores maiores ou iguais ao valor mínimo.
+     */
+    public List<Transacoes> listarSaquesPorValorMinimo(BigDecimal valorMinimo) {
+        return transacoesRepository.find("tipoTransacao = ?1 and valor >= ?2",
+                TipoTransacao.SAQUE, valorMinimo).list();
+    }
+    
+    /**
+     * Lista todos os depositos a partir de um valor mínimo.
+     *
+     * @param valorMinimo O valor mínimo dos saques desejadas.
+     * @return Uma lista de depositos com valores maiores ou iguais ao valor mínimo.
+     */
+    public List<Transacoes> listarDepositosPorValorMinimo(BigDecimal valorMinimo) {
+        return transacoesRepository.find("tipoTransacao = ?1 and valor >= ?2",
+                TipoTransacao.DEPOSITO, valorMinimo).list();
     }
     
     /**
@@ -380,6 +420,7 @@ public class TransacoesService {
     private void realizarSaqueContaCorrente(ContaCorrente contaCorrente, BigDecimal valor) throws SaqueExcedeLimiteException, NotificacaoNaoEncontradaException {
         BigDecimal saldoConta = contaCorrente.getSaldo();
         BigDecimal limiteCredito = contaCorrente.getLimiteCredito();
+        
 
         // Verifica se o saque excede o saldo e usa o limite de crédito
         if (saldoConta.compareTo(valor) < 0) {
@@ -400,12 +441,6 @@ public class TransacoesService {
         contaCorrente.setSaldo(saldoConta);
         contaCorrenteRepository.persist(contaCorrente);
 
-        BigDecimal limiteSaque = alertasGastosExcessivos.getValorLimite();
-
-        if (valor.compareTo(limiteSaque) > 0) {
-            criarNotificacaoGastoExcessivo(contaCorrente, valor);
-        }
-
         Transacoes transacao = new Transacoes();
         transacao.setTipoTransacao(TipoTransacao.SAQUE);
         transacao.setDataHoraTransacao(LocalDate.now());
@@ -418,8 +453,10 @@ public class TransacoesService {
         notificacoes.setDataHoraNotificacao(LocalDateTime.now());
         notificacoes.setEnviada(1);
         notificacoes.setMensagemNotificacao("O Cliente: " + contaCorrente.getClienteID() + " realizou um Tipo de Transação: " + transacao.getTipoTransacao() + " na data e hora: " + transacao.getDataHoraTransacao() + " no valor de: R$ " + transacao.getValor());
+        
+        
+        //notificacoesService.criarNotificacao(notificacoes);
 
-        notificacoesService.criarNotificacao(notificacoes);
     }
 
 
@@ -465,7 +502,7 @@ public class TransacoesService {
         notificacoes.setEnviada(1);
         notificacoes.setMensagemNotificacao("O Cliente: " + contasConjuntas.getClienteID().toString() + " realizou um Tipo de Transação: " + transacao.getTipoTransacao() + " na data e hora: " + transacao.getDataHoraTransacao() + " no valor de: R$ " + transacao.getValor());
 
-        notificacoesService.criarNotificacao(notificacoes);
+        //notificacoesService.criarNotificacao(notificacoes);
     }
 
 
@@ -511,7 +548,7 @@ public class TransacoesService {
         notificacoes.setEnviada(1);
         notificacoes.setMensagemNotificacao("O Cliente: " + poupanca.getClienteID() + " realizou um Tipo de Transação: " + transacao.getTipoTransacao() + " na data e hora: " + transacao.getDataHoraTransacao() + " no valor de: R$ " + transacao.getValor());
 
-        notificacoesService.criarNotificacao(notificacoes);
+        //notificacoesService.criarNotificacao(notificacoes);
     }
 
     /**

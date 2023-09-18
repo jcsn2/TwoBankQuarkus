@@ -3,7 +3,6 @@ package acc.br.service;
 import acc.br.exception.ClienteNaoEncontradoException;
 import acc.br.exception.InvestimentoNaoEncontradoException;
 import acc.br.model.Clientes;
-import acc.br.model.Emprestimos;
 import acc.br.model.Investimentos;
 import acc.br.repository.ClientesRepository;
 import acc.br.repository.InvestimentosRepository;

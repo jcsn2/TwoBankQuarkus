@@ -3,7 +3,6 @@ package acc.br.service;
 import acc.br.exception.ContaExistenteException;
 import acc.br.exception.ParametroConfiguracaoNaoEncontradoException;
 import acc.br.exception.PoupancaNaoEncontradaException;
-import acc.br.model.ContasConjuntas;
 import acc.br.model.ParametrosConfiguracao;
 import acc.br.model.Poupanca;
 import acc.br.repository.ParametrosConfiguracaoRepository;

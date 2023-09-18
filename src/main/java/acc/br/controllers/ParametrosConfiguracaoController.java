@@ -10,6 +10,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.net.URI;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Controlador para a entidade ParametrosConfiguracao.
@@ -22,6 +24,9 @@ public class ParametrosConfiguracaoController {
 
     @Inject
     ParametrosConfiguracaoService parametrosConfiguracaoService;
+    
+    private static final int HTTP_OK = Response.Status.OK.getStatusCode();
+    private static final Logger logger = Logger.getLogger(ParametrosConfiguracaoController.class.getName());
 
     /**
      * Cria um novo registro de parâmetro de configuração.
@@ -35,6 +40,7 @@ public class ParametrosConfiguracaoController {
         URI uri = UriBuilder.fromPath("/parametros-configuracao/{id}")
                 .resolveTemplate("id", parametrosConfiguracao.getParametroID())
                 .build();
+        logger.info("Parametro criado com sucesso: " + parametrosConfiguracao);
         return Response.created(uri).build();
     }
 
@@ -51,8 +57,10 @@ public class ParametrosConfiguracaoController {
     public Response atualizarParametrosConfiguracao(@PathParam("id") Long id, @Valid ParametrosConfiguracao parametrosConfiguracao) {
         try {
             parametrosConfiguracaoService.atualizarParametrosConfiguracao(id, parametrosConfiguracao);
-            return Response.noContent().build();
+            logger.info("Parametro atualizado com sucesso: " + parametrosConfiguracao);
+            return Response.status(HTTP_OK).build();
         } catch (ParametroConfiguracaoNaoEncontradoException e) {
+        	logger.log(Level.SEVERE, "Erro ao atualizar notificação: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         }
     }
@@ -69,8 +77,10 @@ public class ParametrosConfiguracaoController {
     public Response obterParametrosConfiguracao(@PathParam("id") Long id) {
         try {
             ParametrosConfiguracao parametrosConfiguracao = parametrosConfiguracaoService.obterParametrosConfiguracao(id);
+            logger.info("Parametro obtido com sucesso: " + id);
             return Response.ok(parametrosConfiguracao).build();
         } catch (ParametroConfiguracaoNaoEncontradoException e) {
+        	logger.log(Level.SEVERE, "Erro ao obter notificação: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         }
     }
@@ -83,6 +93,7 @@ public class ParametrosConfiguracaoController {
     @GET
     public Response listarParametrosConfiguracao() {
         List<ParametrosConfiguracao> parametrosConfiguracaoList = parametrosConfiguracaoService.listarParametrosConfiguracao();
+        logger.info("Parametro listado com sucesso");
         return Response.ok(parametrosConfiguracaoList).build();
     }
 
@@ -98,8 +109,10 @@ public class ParametrosConfiguracaoController {
     public Response removerParametrosConfiguracao(@PathParam("id") Long id) {
         try {
             parametrosConfiguracaoService.removerParametrosConfiguracao(id);
+            logger.info("Parametro removido com sucesso: " + id);
             return Response.noContent().build();
         } catch (ParametroConfiguracaoNaoEncontradoException e) {
+        	logger.log(Level.SEVERE, "Erro ao remover notificação: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         }
     }

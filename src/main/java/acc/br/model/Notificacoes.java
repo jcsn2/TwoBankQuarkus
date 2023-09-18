@@ -6,7 +6,6 @@ import javax.validation.constraints.*;
 import java.time.LocalDateTime;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
 /**
  * Classe que representa as notificações no sistema.
@@ -14,15 +13,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 @Entity
 @Table(name = "Notificacoes")
 @ApplicationScoped
-public class Notificacoes extends PanacheEntityBase {
-
-    /**
-     * ID único da notificação.
-     */
-	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "NotificacaoID")
-    private Long notificacaoID;
+public class Notificacoes extends PanacheEntity {
 
     /**
      * Mensagem da notificação.
@@ -51,24 +42,6 @@ public class Notificacoes extends PanacheEntityBase {
     private Integer enviada;
 
     // Getters e setters
-
-    /**
-     * Obtém o ID da notificação.
-     *
-     * @return O ID da notificação.
-     */
-    public Long getNotificacaoID() {
-        return notificacaoID;
-    }
-
-    /**
-     * Define o ID da notificação.
-     *
-     * @param notificacaoID O ID da notificação.
-     */
-    public void setNotificacaoID(Long notificacaoID) {
-        this.notificacaoID = notificacaoID;
-    }
 
     /**
      * Obtém a mensagem da notificação.

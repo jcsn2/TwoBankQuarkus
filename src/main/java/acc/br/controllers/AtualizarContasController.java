@@ -12,6 +12,10 @@ import acc.br.service.PoupancaService;
 import acc.br.util.PoupancaServiceQualifier;
 import acc.br.service.ContasConjuntasService;
 import io.quarkus.runtime.annotations.RegisterForReflection;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -36,6 +40,10 @@ public class AtualizarContasController {
 
     @Inject
     ContasConjuntasService contasConjuntasService;
+    
+    private static final int HTTP_OK = Response.Status.OK.getStatusCode();
+    private static final Logger logger = Logger.getLogger(AtualizarContasController.class.getName());
+
 
     /**
      * Atualiza uma conta corrente existente.
@@ -51,10 +59,13 @@ public class AtualizarContasController {
     public Response atualizarContaCorrente(@PathParam("id") Long id, @Valid ContaCorrente contaCorrente) {
         try {
             Contas contaAtualizada = contaCorrenteService.atualizarConta(id, contaCorrente);
-            return Response.status(Response.Status.OK).entity(contaAtualizada).build();
+            logger.info("Conta Corrente atualizada com sucesso: " + contaCorrente.getcontaCorrenteID()); 
+            return Response.status(HTTP_OK).entity(contaAtualizada).build();
         } catch (ContaCorrenteNaoEncontradaException e) {
+        	 logger.log(Level.SEVERE, "Erro ao atualizar conta corrente: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (IllegalArgumentException e) {
+        	 logger.log(Level.SEVERE, "Erro ao atualizar conta corrente: " + e.getMessage(), e);
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
     }
@@ -73,10 +84,13 @@ public class AtualizarContasController {
     public Response atualizarContaPoupanca(@PathParam("id") Long id, @Valid Poupanca contaPoupanca) {
         try {
             Contas contaAtualizada = poupancaService.atualizarConta(id, contaPoupanca);
-            return Response.status(Response.Status.OK).entity(contaAtualizada).build();
+            logger.info("Conta Poupanca atualizada com sucesso: " + contaPoupanca.getPoupancaID());
+            return Response.status(HTTP_OK).entity(contaAtualizada).build();
         } catch (PoupancaNaoEncontradaException e) {
+        	logger.log(Level.SEVERE, "Erro ao atualizar conta poupanca: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (IllegalArgumentException e) {
+        	logger.log(Level.SEVERE, "Erro ao atualizar conta poupanca: " + e.getMessage(), e);
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
     }
@@ -95,10 +109,13 @@ public class AtualizarContasController {
     public Response atualizarContaConjunta(@PathParam("id") Long id, @Valid ContasConjuntas contasConjuntas) {
         try {
             Contas contaAtualizada = contasConjuntasService.atualizarConta(id, contasConjuntas);
-            return Response.status(Response.Status.OK).entity(contaAtualizada).build();
+            logger.info("Conta Conjunta atualizada com sucesso: " + contasConjuntas.getContaConjuntaID());
+            return Response.status(HTTP_OK).entity(contaAtualizada).build();
         } catch (ContaConjuntaNaoEncontradaException e) {
+        	logger.log(Level.SEVERE, "Erro ao atualizar conta conjunta: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         } catch (IllegalArgumentException e) {
+        	logger.log(Level.SEVERE, "Erro ao atualizar conta conjunta: " + e.getMessage(), e);
             return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
     }

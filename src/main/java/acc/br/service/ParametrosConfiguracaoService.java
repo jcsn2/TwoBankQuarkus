@@ -1,9 +1,7 @@
 package acc.br.service;
 
-import acc.br.OpaGen;
 import acc.br.exception.ParametroConfiguracaoNaoEncontradoException;
 import acc.br.model.ParametrosConfiguracao;
-import acc.br.model.Transacoes;
 import acc.br.repository.ParametrosConfiguracaoRepository;
 
 import javax.enterprise.context.ApplicationScoped;

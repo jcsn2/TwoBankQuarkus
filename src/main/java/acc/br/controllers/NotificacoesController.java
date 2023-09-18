@@ -9,6 +9,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Controller para a entidade Notificacoes.
@@ -21,19 +23,24 @@ public class NotificacoesController {
 
     @Inject
     NotificacoesService notificacoesService;
+    
+    private static final int HTTP_OK = Response.Status.OK.getStatusCode();
+    private static final Logger logger = Logger.getLogger(NotificacoesController.class.getName());
 
     /**
      * Cria uma nova notificação.
      *
      * @param notificacao A notificação a ser criada.
-     * @return Um Response com o código 201 (CREATED) em caso de sucesso e o objeto Notificacoes criado.
+     * @return Um Response com o código 200 (OK) em caso de sucesso e o objeto Notificacoes criado.
      */
     @POST
     public Response criarNotificacao(Notificacoes notificacao) {
         try {
             notificacoesService.criarNotificacao(notificacao);
-            return Response.status(Response.Status.CREATED).entity(notificacao).build();
+            logger.info("Notificação criada com sucesso: " + notificacao);
+            return Response.status(HTTP_OK).entity(notificacao).build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao criar notificação: " + e.getMessage(), e);
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("Erro ao criar notificação: " + e.getMessage())
                     .build();
@@ -53,12 +60,15 @@ public class NotificacoesController {
     public Response atualizarNotificacao(@PathParam("id") Long id, Notificacoes notificacao) {
         try {
             notificacoesService.atualizarNotificacao(id, notificacao);
-            return Response.ok(notificacao).build();
+            logger.info("Notificação atualizada com sucesso: " + notificacao);
+            return Response.status(HTTP_OK).build();
         } catch (NotificacaoNaoEncontradaException e) {
+        	logger.log(Level.SEVERE, "Erro ao atualizar notificação: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND)
                     .entity("Notificação não encontrada com o ID: " + id)
                     .build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao atualizar notificação: " + e.getMessage(), e);
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("Erro ao atualizar notificação: " + e.getMessage())
                     .build();
@@ -77,12 +87,15 @@ public class NotificacoesController {
     public Response obterNotificacao(@PathParam("id") Long id) {
         try {
             Notificacoes notificacao = notificacoesService.obterNotificacao(id);
+            logger.info("Notificação obtida com sucesso: " + notificacao);
             return Response.ok(notificacao).build();
         } catch (NotificacaoNaoEncontradaException e) {
+        	logger.log(Level.SEVERE, "Erro ao obter notificação: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND)
                     .entity("Notificação não encontrada com o ID: " + id)
                     .build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao obter notificação: " + e.getMessage(), e);
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("Erro ao obter notificação: " + e.getMessage())
                     .build();
@@ -98,8 +111,10 @@ public class NotificacoesController {
     public Response listarNotificacoes() {
         try {
             List<Notificacoes> notificacoes = notificacoesService.listarNotificacoes();
+            logger.info("Notificação lsitada com sucesso");
             return Response.ok(notificacoes).build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao listar notificações: " + e.getMessage(), e);
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("Erro ao listar notificações: " + e.getMessage())
                     .build();
@@ -118,12 +133,15 @@ public class NotificacoesController {
     public Response removerNotificacao(@PathParam("id") Long id) {
         try {
             notificacoesService.removerNotificacao(id);
-            return Response.noContent().build();
+            logger.info("Notificação removida com sucesso: " + id);
+            return Response.status(HTTP_OK).build();
         } catch (NotificacaoNaoEncontradaException e) {
+        	logger.log(Level.SEVERE, "Erro ao remover notificações: " + e.getMessage(), e);
             return Response.status(Response.Status.NOT_FOUND)
                     .entity("Notificação não encontrada com o ID: " + id)
                     .build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao remover notificações: " + e.getMessage(), e);
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("Erro ao remover notificação: " + e.getMessage())
                     .build();
@@ -141,8 +159,10 @@ public class NotificacoesController {
     public Response listarNotificacoesPorCliente(@PathParam("clienteID") Long clienteID) {
         try {
             List<Notificacoes> notificacoes = notificacoesService.listarNotificacoesPorCliente(clienteID);
+            logger.info("Notificação listada com sucesso: " + clienteID);
             return Response.ok(notificacoes).build();
         } catch (Exception e) {
+        	logger.log(Level.SEVERE, "Erro ao listar notificações: " + e.getMessage(), e);
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("Erro ao listar notificações para o cliente com ID: " + clienteID + ". " + e.getMessage())
                     .build();
