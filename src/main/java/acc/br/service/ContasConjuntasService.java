@@ -1,6 +1,5 @@
 package acc.br.service;
 
-import acc.br.model.Contas;
 import acc.br.model.ContasConjuntas;
 import acc.br.repository.ContasConjuntasRepository;
 import acc.br.util.TipoConta;
